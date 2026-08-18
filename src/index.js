@@ -13,7 +13,7 @@ export default {
 
     // Одноразовая настройка Telegram webhook
     if (url.pathname === "/setup") {
-      const webhookUrl = ${url.origin}/telegram;
+      const webhookUrl = `${url.origin}/telegram`;
 
       const response = await fetch(
         https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/setWebhook?url=${encodeURIComponent(webhookUrl)}
