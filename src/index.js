@@ -15,9 +15,13 @@ export default {
     if (url.pathname === "/setup") {
       const webhookUrl = `${url.origin}/telegram`;
 
-      const response = await fetch(
-        https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/setWebhook?url=${encodeURIComponent(webhookUrl)}
-      );
+      const telegramUrl =
+  "https://api.telegram.org/bot" +
+  env.TELEGRAM_TOKEN +
+  "/setWebhook?url=" +
+  encodeURIComponent(webhookUrl);
+
+const response = await fetch(telegramUrl);
 
       const result = await response.json();
 
