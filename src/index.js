@@ -31,7 +31,7 @@ export default {
     if (url.pathname === "/telegram" && request.method === "POST") {
       try {
         const update = await request.json();
-
+        console.log("TELEGRAM UPDATE:", JSON.stringify(update));
         if (!update.message) {
           return new Response("OK");
         }
