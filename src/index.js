@@ -40,8 +40,9 @@ export default {
         const text = update.message.text || "";
 
         // Получаем текущее состояние заказа
-        const savedOrder = await env.ORDERS.get(String(chatId), "json");
-
+       const savedOrder = env.ORDERS
+  ? await env.ORDERS.get(String(chatId), "json")
+  : null;
         // /start
         if (text === "/start") {
           await env.ORDERS.delete(String(chatId));
