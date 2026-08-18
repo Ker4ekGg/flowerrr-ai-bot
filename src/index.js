@@ -2,6 +2,12 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    // Проверка Worker
+    if (url.pathname === "/") {
+      return new Response("FLOWERRR AI 🌸 Бот работает!");
+    }
+
+    // Одноразовая установка Telegram webhook
     if (url.pathname === "/setup") {
       const webhookUrl = url.origin + "/telegram";
 
@@ -21,6 +27,7 @@ export default {
       });
     }
 
+    // Получение сообщений от Telegram
     if (url.pathname === "/telegram" && request.method === "POST") {
       try {
         const update = await request.json();
@@ -32,6 +39,7 @@ export default {
         const chatId = update.message.chat.id;
         const text = update.message.text || "";
 
+        // Команда /start
         if (text === "/start") {
           await sendMessage(
             env,
@@ -49,6 +57,7 @@ export default {
           return new Response("OK");
         }
 
+        // Каталог
         if (text === "🌸 Букеты") {
           await sendMessage(
             env,
@@ -65,6 +74,7 @@ export default {
           return new Response("OK");
         }
 
+        // Букеты к 1 сентября
         if (text === "🎓 1 сентября") {
           await sendMessage(
             env,
@@ -74,12 +84,14 @@ export default {
               "💐 Средние — от 3 500 ₽\n" +
               "🌹 Большие — от 4 500 ₽\n" +
               "✨ Авторские — от 5 000 ₽\n\n" +
-              "Можно подобрать букет практически под любой бюджет 💐"
+              "Можно подобрать букет под ваш бюджет 💐\n\n" +
+              "Для заказа нажмите «📝 Заказать букет»."
           );
 
           return new Response("OK");
         }
 
+        // Цены
         if (text === "💰 Цены") {
           await sendMessage(
             env,
@@ -94,6 +106,7 @@ export default {
           return new Response("OK");
         }
 
+        // Доставка
         if (text === "🚚 Доставка") {
           await sendMessage(
             env,
@@ -106,6 +119,7 @@ export default {
           return new Response("OK");
         }
 
+        // Заказ
         if (text === "📝 Заказать букет") {
           await sendMessage(
             env,
@@ -123,6 +137,7 @@ export default {
           return new Response("OK");
         }
 
+        // Обычный вопрос → AI
         const answer = await askAI(env, text);
 
         await sendMessage(env, chatId, answer);
@@ -138,14 +153,17 @@ export default {
   }
 };
 
+
 async function askAI(env, userText) {
   const systemPrompt =
     "Ты — консультант цветочного магазина «Цветы/букеты под заказ».\n\n" +
     "Помогай клиентам выбрать букет, отвечай на вопросы и помогай оформить заказ.\n\n" +
-    "Общайся дружелюбно, коротко и понятно. Используй эмодзи умеренно.\n" +
+    "Общайся дружелюбно, коротко и понятно.\n" +
+    "Используй эмодзи умеренно.\n" +
     "Не выдумывай наличие конкретных цветов.\n" +
     "Если клиент хочет заказать букет, попроси бюджет, дату, время и способ получения.\n" +
-    "Если не знаешь точную информацию, скажи, что уточнишь у менеджера.";
+    "Если не знаешь точную информацию, скажи, что уточнишь у менеджера.\n\n" +
+    "Магазин продаёт букеты под заказ.";
 
   const result = await env.AI.run(
     "@cf/meta/llama-3.1-8b-instruct-fast",
@@ -170,6 +188,7 @@ async function askAI(env, userText) {
   );
 }
 
+
 async function sendMessage(env, chatId, text, keyboard) {
   const body = {
     chat_id: chatId,
@@ -183,16 +202,16 @@ async function sendMessage(env, chatId, text, keyboard) {
     };
   }
 
-  await fetch(
+  const telegramUrl =
     "https://api.telegram.org/bot" +
-      env.TELEGRAM_TOKEN +
-      "/sendMessage",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    }
-  );
+    env.TELEGRAM_TOKEN +
+    "/sendMessage";
+
+  await fetch(telegramUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
 }
