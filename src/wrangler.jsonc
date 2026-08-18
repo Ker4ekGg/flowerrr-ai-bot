@@ -2,5 +2,8 @@
   "name": "still-heart-f419",
   "main": "index.js",
   "compatibility_date": "2026-08-18",
-  "workers_dev": true
+  "workers_dev": true,
+  "ai": {
+    "binding": "AI"
+  }
 }
