@@ -3,4 +3,3 @@ export default {
     return new Response("FLOWERRR AI 🌸");
   }
 };
-
