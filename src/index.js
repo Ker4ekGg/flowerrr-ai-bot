@@ -7,7 +7,7 @@ export default {
       return new Response("FLOWERRR AI 🌸 Бот работает!");
     }
 
-    // Одноразовая установка Telegram webhook
+    // Установка Telegram webhook
     if (url.pathname === "/setup") {
       const webhookUrl = url.origin + "/telegram";
 
@@ -27,7 +27,7 @@ export default {
       });
     }
 
-    // Получение сообщений от Telegram
+    // Telegram webhook
     if (url.pathname === "/telegram" && request.method === "POST") {
       try {
         const update = await request.json();
@@ -39,8 +39,13 @@ export default {
         const chatId = update.message.chat.id;
         const text = update.message.text || "";
 
-        // Команда /start
+        // Получаем текущее состояние заказа
+        const savedOrder = await env.ORDERS.get(String(chatId), "json");
+
+        // /start
         if (text === "/start") {
+          await env.ORDERS.delete(String(chatId));
+
           await sendMessage(
             env,
             chatId,
@@ -74,7 +79,7 @@ export default {
           return new Response("OK");
         }
 
-        // Букеты к 1 сентября
+        // 1 сентября
         if (text === "🎓 1 сентября") {
           await sendMessage(
             env,
@@ -119,19 +124,194 @@ export default {
           return new Response("OK");
         }
 
-        // Заказ
+        // Начало оформления заказа
         if (text === "📝 Заказать букет") {
+          const order = {
+            step: "bouquet",
+            createdAt: new Date().toISOString()
+          };
+
+          await env.ORDERS.put(
+            String(chatId),
+            JSON.stringify(order),
+            { expirationTtl: 86400 }
+          );
+
           await sendMessage(
             env,
             chatId,
             "📝 ОФОРМЛЕНИЕ ЗАКАЗА\n\n" +
-              "Напишите одним сообщением:\n\n" +
-              "1️⃣ Какой букет хотите\n" +
-              "2️⃣ Ваш бюджет\n" +
-              "3️⃣ Дата и время получения\n" +
-              "4️⃣ Самовывоз или доставка\n\n" +
+              "Шаг 1 из 5 🌸\n\n" +"Какой букет вы хотите?\n\n" +
               "Например:\n" +
-              "«Нужен букет на 1 сентября, бюджет 3500 ₽, заберу утром» 💐"
+              "«Нежный букет из роз»\n" +
+              "или\n" +
+              "«Букет к 1 сентября»"
+          );
+
+          return new Response("OK");
+        }
+
+        // Шаг 1 — букет
+        if (savedOrder && savedOrder.step === "bouquet") {
+          savedOrder.bouquet = text;
+          savedOrder.step = "budget";
+
+          await env.ORDERS.put(
+            String(chatId),
+            JSON.stringify(savedOrder),
+            { expirationTtl: 86400 }
+          );
+
+          await sendMessage(
+            env,
+            chatId,
+            "💰 Шаг 2 из 5\n\n" +
+              "Какой у вас бюджет на букет?\n\n" +
+              "Например: 3500 ₽"
+          );
+
+          return new Response("OK");
+        }
+
+        // Шаг 2 — бюджет
+        if (savedOrder && savedOrder.step === "budget") {
+          savedOrder.budget = text;
+          savedOrder.step = "date";
+
+          await env.ORDERS.put(
+            String(chatId),
+            JSON.stringify(savedOrder),
+            { expirationTtl: 86400 }
+          );
+
+          await sendMessage(
+            env,
+            chatId,
+            "📅 Шаг 3 из 5\n\n" +
+              "На какую дату и время нужен букет?\n\n" +
+              "Например:\n" +
+              "«1 сентября к 10:00»"
+          );
+
+          return new Response("OK");
+        }
+
+        // Шаг 3 — дата и время
+        if (savedOrder && savedOrder.step === "date") {
+          savedOrder.date = text;
+          savedOrder.step = "delivery";
+
+          await env.ORDERS.put(
+            String(chatId),
+            JSON.stringify(savedOrder),
+            { expirationTtl: 86400 }
+          );
+
+          await sendMessage(
+            env,
+            chatId,
+            "🚚 Шаг 4 из 5\n\n" +
+              "Как вы хотите получить букет?\n\n" +
+              "Напишите:\n" +
+              "• Доставка\n" +
+              "или\n" +
+              "• Самовывоз"
+          );
+
+          return new Response("OK");
+        }
+
+        // Шаг 4 — доставка
+        if (savedOrder && savedOrder.step === "delivery") {
+          savedOrder.delivery = text;
+
+          if (
+            text.toLowerCase().includes("достав") ||
+            text.toLowerCase().includes("курьер")
+          ) {
+            savedOrder.step = "address";
+
+            await env.ORDERS.put(
+              String(chatId),
+              JSON.stringify(savedOrder),
+              { expirationTtl: 86400 }
+            );
+
+            await sendMessage(
+              env,
+              chatId,
+              "📍 Шаг 5 из 5\n\n" +
+                "Напишите адрес доставки."
+            );
+
+            return new Response("OK");
+          }
+
+          savedOrder.address = "Самовывоз";
+          savedOrder.step = "name";
+
+          await env.ORDERS.put(
+            String(chatId),
+            JSON.stringify(savedOrder),
+            { expirationTtl: 86400 }
+          );
+
+          await sendMessage(
+            env,
+            chatId,
+            "👤 Напишите ваше имя и номер телефона одним сообщением.\n\n" +
+              "Например:\n" +
+              "Иван, +7 999 123-45-67"
+          );
+
+          return new Response("OK");
+        }
+
+        // Адрес доставки
+        if (savedOrder && savedOrder.step === "address") {
+          savedOrder.address = text;
+          savedOrder.step = "name";
+
+          await env.ORDERS.put(
+            String(chatId),
+            JSON.stringify(savedOrder),
+            { expirationTtl: 86400 }
+          );
+
+          await sendMessage(
+            env,
+            chatId,
+            "👤 Последний шаг!\n\n" +
+              "Напишите ваше имя и номер телефона одним сообщением.\n\n" +
+              "Например:\n" +
+              "Карен, +7 999 123-45-67"
+          );
+
+          return new Response("OK");
+        }
+
+        // Имя и телефон
+        if (savedOrder && savedOrder.step === "name") {
+          savedOrder.name = text;
+
+          const orderText =
+            "🌸 НОВЫЙ ЗАКАЗ\n\n" +
+            "💐 Букет: " + savedOrder.bouquet + "\n" +"💰 Бюджет: " + savedOrder.budget + "\n" +
+            "📅 Дата и время: " + savedOrder.date + "\n" +
+            "🚚 Получение: " + savedOrder.delivery + "\n" +
+            "📍 Адрес: " + (savedOrder.address || "Самовывоз") + "\n" +
+            "👤 Клиент: " + savedOrder.name;
+
+          console.log("NEW ORDER:", orderText);
+
+          await env.ORDERS.delete(String(chatId));
+
+          await sendMessage(
+            env,
+            chatId,
+            "✅ Спасибо! Заявка принята.\n\n" +
+              "Мы проверим детали заказа и свяжемся с вами для подтверждения. 🌸\n\n" +
+              "Если хотите, можете задать любой вопрос."
           );
 
           return new Response("OK");
@@ -161,7 +341,7 @@ async function askAI(env, userText) {
     "Общайся дружелюбно, коротко и понятно.\n" +
     "Используй эмодзи умеренно.\n" +
     "Не выдумывай наличие конкретных цветов.\n" +
-    "Если клиент хочет заказать букет, попроси бюджет, дату, время и способ получения.\n" +
+    "Если клиент хочет заказать букет, предложи нажать «📝 Заказать букет».\n" +
     "Если не знаешь точную информацию, скажи, что уточнишь у менеджера.\n\n" +
     "Магазин продаёт букеты под заказ.";
 
