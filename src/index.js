@@ -207,11 +207,15 @@ async function sendMessage(env, chatId, text, keyboard) {
     env.TELEGRAM_TOKEN +
     "/sendMessage";
 
-  await fetch(telegramUrl, {
+  const response = await fetch(telegramUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify(body)
   });
+
+  const result = await response.text();
+
+  console.log("Telegram response:", result);
 }
