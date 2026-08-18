@@ -1,17 +1,7 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-if (url.pathname === "/test") {
-  try {
-    const test = await env.ORDERS.get("test");
-    return new Response("KV OK: " + test);
-  } catch (error) {
-    return new Response(
-      "KV ERROR: " + error.message + "\n" + error.stack,
-      { status: 500 }
-    );
-  }
-}
+
     // Проверка Worker
     if (url.pathname === "/") {
       return new Response("FLOWERRR AI 🌸 Бот работает!");
