@@ -1,9 +1,15 @@
 {
-  "name": "still-heart-f419",
-  "main": "index.js",
-  "compatibility_date": "2026-08-18",
-  "workers_dev": true,
-  "ai": {
-    "binding": "AI"
-  }
+"name": "still-heart-f419",
+"main": "index.js",
+"compatibility_date": "2026-08-18",
+"workers_dev": true,
+"ai": {
+"binding": "AI"
+},
+"kv_namespaces": [
+{
+"binding": "ORDERS",
+"id": "a3eb7bbe3a874b31b5dba44cb8b45332"
+}
+]
 }
