@@ -45,7 +45,9 @@ export default {
   : null;
         // /start
         if (text === "/start") {
-          await env.ORDERS.delete(String(chatId));
+          if (env.ORDERS) {
+            await env.ORDERS.delete(String(chatId));
+}
 
           await sendMessage(
             env,
