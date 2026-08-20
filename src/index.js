@@ -38,6 +38,12 @@ export default {
 
         const chatId = update.message.chat.id;
         const text = update.message.text || "";
+        
+        const telegramUsername = update.message.from?.username
+? "@" + update.message.from.username
+: "не указан";
+
+const telegramName = update.message.from?.first_name || "не указано";
 
         // Получаем текущее состояние заказа
        const savedOrder = env.ORDERS
@@ -287,38 +293,51 @@ export default {
             "👤 Последний шаг!\n\n" +
               "Напишите ваше имя и номер телефона одним сообщением.\n\n" +
               "Например:\n" +
-              "Карен, +7 999 123-45-67"
+              "Иван, +7 999 123-45-67"
           );
 
           return new Response("OK");
         }
 
-        // Имя и телефон
-        if (savedOrder && savedOrder.step === "name") {
-          savedOrder.name = text;
+       // Имя и телефон
+if (savedOrder && savedOrder.step === "name") {
+savedOrder.name = text;
 
-          const orderText =
-            "🌸 НОВЫЙ ЗАКАЗ\n\n" +
-            "💐 Букет: " + savedOrder.bouquet + "\n" +"💰 Бюджет: " + savedOrder.budget + "\n" +
-            "📅 Дата и время: " + savedOrder.date + "\n" +
-            "🚚 Получение: " + savedOrder.delivery + "\n" +
-            "📍 Адрес: " + (savedOrder.address || "Самовывоз") + "\n" +
-            "👤 Клиент: " + savedOrder.name;
+const orderText =
+"🌸 НОВЫЙ ЗАКАЗ\n\n" +
+"💐 Букет: " + savedOrder.bouquet + "\n" +
+"💰 Бюджет: " + savedOrder.budget + "\n" +
+"📅 Дата и время: " + savedOrder.date + "\n" +
+"🚚 Получение: " + savedOrder.delivery + "\n" +
+"📍 Адрес: " + (savedOrder.address || "Самовывоз") + "\n" +
+"👤 Клиент: " + savedOrder.name + "\n\n" +
+"📱 Telegram: " + telegramUsername + "\n" +
+"👋 Имя в Telegram: " + telegramName + "\n" +
+"🆔 ID: " + chatId;
 
-          console.log("NEW ORDER:", orderText);
+console.log("NEW ORDER:", orderText);
 
-          await env.ORDERS.delete(String(chatId));
+// Отправляем заказ владельцу
+await sendMessage(
+env,
+"641017166",
+orderText
+);
 
-          await sendMessage(
-            env,
-            chatId,
-            "✅ Спасибо! Заявка принята.\n\n" +
-              "Мы проверим детали заказа и свяжемся с вами для подтверждения. 🌸\n\n" +
-              "Если хотите, можете задать любой вопрос."
-          );
+// Удаляем заказ из KV
+await env.ORDERS.delete(String(chatId));
 
-          return new Response("OK");
-        }
+// Подтверждение клиенту
+await sendMessage(
+env,
+chatId,
+"✅ Спасибо! Заявка принята.\n\n" +
+"Мы проверим детали заказа и свяжемся с вами для подтверждения. 🌸\n\n" +
+"Если хотите, можете задать любой вопрос."
+);
+
+return new Response("OK");
+}
 
         // Обычный вопрос → AI
         const answer = await askAI(env, text);
