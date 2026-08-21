@@ -346,7 +346,13 @@ const orderText =
 
 console.log("NEW ORDER:", orderText);
 
-// Отправляем заказ владельцу
+// Отправляем заказ в Flower Admin
+await sendAdminMessage(
+env,
+orderText
+);
+
+// Пока оставляем старую отправку как резерв
 await sendMessage(
 env,
 "641017166",
