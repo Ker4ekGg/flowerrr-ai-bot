@@ -10,6 +10,10 @@
 {
 "binding": "ORDERS",
 "id": "a3eb7bbe3a874b31b5dba44cb8b45332"
+},
+{
+"binding": "CHAT_HISTORY",
+"id": "4c1b34708c714e0d97792c94c7ba2c63"
 }
 ]
 }
