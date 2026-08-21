@@ -331,7 +331,10 @@ JSON.stringify(order),
 if (savedOrder && savedOrder.step === "name") {
 // Проверяем имя и телефон
 if (savedOrder && savedOrder.step === "name") {
-const phoneMatch = text.match(/(?:\+7|8)\s*\(?\d{3}\)?[\s-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}/);
+
+const phoneMatch = text.match(
+/(?:\+7|8)\s*\(?\d{3}\)?[\s-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}/
+);
 
 if (!phoneMatch) {
 await sendMessage(
