@@ -430,7 +430,21 @@ return new Response("OK");
 // Обычный вопрос → AI
 const answer = await askAI(env, chatId, text);
 
+// Отправляем клиенту ответ AI
 await sendMessage(env, chatId, answer);
+
+// Сохраняем лог общения для Flower Admin
+await sendAdminMessage(
+env,
+"💬 ДИАЛОГ С КЛИЕНТОМ\n\n" +
+"👤 Имя: " + telegramName + "\n" +
+"📱 Telegram: " + telegramUsername + "\n" +
+"🆔 ID: " + chatId + "\n\n" +
+"👤 Клиент:\n" +
+text + "\n\n" +
+"🤖 FLOWERRR AI:\n" +
+answer
+);
 
 return new Response("OK");
 } catch (error) {
