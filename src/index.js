@@ -333,6 +333,7 @@ savedOrder.name = text;
 
 const orderText =
 "🌸 НОВЫЙ ЗАКАЗ\n\n" +
+"🔢 Номер: " + savedOrder.orderNumber + "\n" +
 "💐 Букет: " + savedOrder.bouquet + "\n" +
 "💰 Бюджет: " + savedOrder.budget + "\n" +
 "📅 Дата и время: " + savedOrder.date + "\n" +
