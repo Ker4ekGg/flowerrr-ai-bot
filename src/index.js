@@ -154,14 +154,25 @@ await env.CHAT_HISTORY.delete(String(chatId));
         }
 
         // Позвать менеджера
-if (text === "👨‍💼 Позвать менеджера") {
+const managerRequest =
+text === "👨‍💼 Позвать менеджера" ||
+text.toLowerCase().includes("хочу менеджера") ||
+text.toLowerCase().includes("позовите менеджера") ||
+text.toLowerCase().includes("позвать менеджера") ||
+text.toLowerCase().includes("соедините с менеджером") ||
+text.toLowerCase().includes("поговорить с менеджером") ||
+text.toLowerCase().includes("поговорить с человеком") ||
+text.toLowerCase().includes("хочу поговорить с человеком") ||
+text.toLowerCase().includes("с человеком");
+
+if (managerRequest) {
 await sendAdminMessage(
 env,
 "🔔 КЛИЕНТ ПРОСИТ МЕНЕДЖЕРА\n\n" +
 "👤 Имя: " + telegramName + "\n" +
 "📱 Telegram: " + telegramUsername + "\n" +
 "🆔 ID: " + chatId + "\n\n" +
-"💬 Сообщение: " + text
+"💬 Сообщение клиента: " + text
 );
 
 await sendMessage(
