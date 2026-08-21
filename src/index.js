@@ -71,7 +71,9 @@ const telegramName = update.message.from?.first_name || "не указано";
           if (env.ORDERS) {
             await env.ORDERS.delete(String(chatId));
 }
-
+if (env.CHAT_HISTORY) {
+await env.CHAT_HISTORY.delete(String(chatId));
+}
           await sendMessage(
             env,
             chatId,
