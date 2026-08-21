@@ -326,10 +326,8 @@ JSON.stringify(order),
 
           return new Response("OK");
         }
-
-       // Имя и телефон
-if (savedOrder && savedOrder.step === "name") {
-// Проверяем имя и телефон
+        
+// Имя и телефон + проверка телефона
 if (savedOrder && savedOrder.step === "name") {
 
 const phoneMatch = text.match(
@@ -394,12 +392,12 @@ chatId,
 return new Response("OK");
 }
 
-        // Обычный вопрос → AI
-        const answer = await askAI(env, text);
+// Обычный вопрос → AI
+const answer = await askAI(env, text);
 
-        await sendMessage(env, chatId, answer);
+await sendMessage(env, chatId, answer);
 
-       return new Response("OK");
+return new Response("OK");
 } catch (error) {
 console.error(error);
 return new Response("OK");
