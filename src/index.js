@@ -1,6 +1,23 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // Тест Admin Bot
+if (url.pathname === "/admin-test") {
+const response = await fetch(
+"https://api.telegram.org/bot" +
+env.ADMIN_BOT_TOKEN +
+"/sendMessage?chat_id=641017166&text=" +
+encodeURIComponent("🧪 ADMIN BOT TEST\n\nFlower Admin успешно подключён! 🌸")
+);
+
+const result = await response.json();
+
+return new Response(JSON.stringify(result, null, 2), {
+headers: {
+"Content-Type": "application/json"
+}
+});
+}
 
     // Проверка Worker
     if (url.pathname === "/") {
