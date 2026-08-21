@@ -150,18 +150,28 @@ const telegramName = update.message.from?.first_name || "не указано";
           return new Response("OK");
         }
 
-        // Начало оформления заказа
-        if (text === "📝 Заказать букет") {
-          const order = {
-            step: "bouquet",
-            createdAt: new Date().toISOString()
-          };
+      // Начало оформления заказа
+if (text === "📝 Заказать букет") {
+const order = {
+step: "bouquet",
+createdAt: new Date().toISOString()
+};
 
-          await env.ORDERS.put(
-            String(chatId),
-            JSON.stringify(order),
-            { expirationTtl: 86400 }
-          );
+// Уведомление владельцу
+await sendAdminMessage(
+env,
+"🛎 НОВЫЙ КЛИЕНТ НАЧАЛ ОФОРМЛЕНИЕ\n\n" +
+"👤 Имя: " + telegramName + "\n" +
+"📱 Telegram: " + telegramUsername + "\n" +
+"🆔 ID: " + chatId + "\n\n" +
+"📝 Клиент нажал «Заказать букет»."
+);
+
+await env.ORDERS.put(
+String(chatId),
+JSON.stringify(order),
+{ expirationTtl: 86400 }
+);
 
           await sendMessage(
             env,
@@ -361,16 +371,44 @@ return new Response("OK");
 
         await sendMessage(env, chatId, answer);
 
-        return new Response("OK");
-      } catch (error) {
-        console.error(error);
-        return new Response("OK");
-      }
-    }
+       return new Response("OK");
+} catch (error) {
+console.error(error);
+return new Response("OK");
+}
+}
 
-    return new Response("FLOWERRR AI 🌸");
-  }
+return new Response("FLOWERRR AI 🌸");
+}
 };
+
+// Отправка сообщения владельцу через Admin Bot
+async function sendAdminMessage(env, text) {
+const response = await fetch(
+"https://api.telegram.org/bot" +
+env.ADMIN_BOT_TOKEN +
+"/sendMessage",
+{
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+chat_id: "641017166",
+text: text
+})
+}
+);
+
+const result = await response.json();
+
+console.log(
+"ADMIN BOT RESPONSE:",
+JSON.stringify(result)
+);
+
+return result;
+}
 
 
 async function askAI(env, userText) {
