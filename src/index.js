@@ -395,7 +395,7 @@ return new Response("OK");
 }
 
 // Обычный вопрос → AI
-const answer = await askAI(env, text);
+const answer = await askAI(env, chatId, text);
 
 await sendMessage(env, chatId, answer);
 
