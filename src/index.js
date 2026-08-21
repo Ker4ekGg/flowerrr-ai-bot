@@ -439,7 +439,27 @@ return result;
 }
 
 
-async function askAI(env, userText) {
+async function askAI(env, chatId, userText) {
+const historyKey = String(chatId);
+
+// Получаем историю предыдущего диалога
+let history = [];
+
+if (env.CHAT_HISTORY) {
+history = await env.CHAT_HISTORY.get(historyKey, "json") || [];
+}
+
+// Добавляем сообщение клиента
+history.push({
+role: "user",
+content: userText
+});
+
+// Оставляем только последние 10 сообщений
+if (history.length > 10) {
+history = history.slice(-10);
+}
+
 const systemPrompt =
 "Ты — виртуальный консультант цветочного магазина «FLOWERRR AI 🌸».\n\n" +
 
@@ -477,11 +497,6 @@ const systemPrompt =
 "Можно сказать, что в этот бюджет можно подобрать подходящий вариант, " +
 "а точный состав будет зависеть от выбранных цветов и их наличия.\n\n" +
 
-"ПРИМЕР:\n" +
-"Клиент: «У меня бюджет 3000 рублей, что можно подарить девушке?»\n" +
-"Хороший ответ: «Конечно 🌸 В бюджет до 3000 ₽ можно подобрать красивый букет. " +
-"Подскажите, пожалуйста, это на день рождения, свидание или другой повод?»\n\n" +
-
 "ЕСЛИ КЛИЕНТ СПРАШИВАЕТ ПРО КОНКРЕТНЫЙ ЦВЕТОК:\n" +
 "Можно рассказать общую информацию о цветке, его внешнем виде, символике и особенностях. " +
 "Но не утверждай, что этот цветок сейчас есть в наличии.\n\n" +
@@ -510,19 +525,39 @@ messages: [
 role: "system",
 content: systemPrompt
 },
-{
-role: "user",
-content: userText
-}
+...history
 ],
 max_tokens: 300
 }
 );
 
-return (
+const answer =
 result.response ||
-"🌸 Сейчас не смогли обработать сообщение. Напишите ещё раз, пожалуйста."
+"🌸 Сейчас не смогли обработать сообщение. Напишите ещё раз, пожалуйста.";
+
+// Сохраняем ответ AI в историю
+history.push({
+role: "assistant",
+content: answer
+});
+
+// Снова ограничиваем историю
+if (history.length > 10) {
+history = history.slice(-10);
+}
+
+// Сохраняем историю в KV
+if (env.CHAT_HISTORY) {
+await env.CHAT_HISTORY.put(
+historyKey,
+JSON.stringify(history),
+{
+expirationTtl: 604800
+}
 );
+}
+
+return answer;
 }
 
 
