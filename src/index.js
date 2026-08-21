@@ -329,6 +329,23 @@ JSON.stringify(order),
 
        // Имя и телефон
 if (savedOrder && savedOrder.step === "name") {
+// Проверяем имя и телефон
+if (savedOrder && savedOrder.step === "name") {
+const phoneMatch = text.match(/(?:\+7|8)\s*\(?\d{3}\)?[\s-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}/);
+
+if (!phoneMatch) {
+await sendMessage(
+env,
+chatId,
+"⚠️ Не удалось найти номер телефона.\n\n" +
+"Пожалуйста, напишите имя и номер телефона одним сообщением.\n\n" +
+"Например:\n" +
+"Иван, +7 999 123-45-67"
+);
+
+return new Response("OK");
+}
+
 savedOrder.name = text;
 
 const orderText =
