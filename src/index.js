@@ -153,6 +153,7 @@ const telegramName = update.message.from?.first_name || "не указано";
       // Начало оформления заказа
 if (text === "📝 Заказать букет") {
 const order = {
+orderNumber: "FLOW-" + Date.now(),
 step: "bouquet",
 createdAt: new Date().toISOString()
 };
