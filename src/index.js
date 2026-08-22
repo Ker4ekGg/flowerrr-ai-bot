@@ -176,6 +176,58 @@ if (url.pathname === "/admin-telegram" && request.method === "POST") {
 
   return new Response("OK");
 }
+    if (text === "💬 Диалоги") {
+  await sendAdminBotMessage(
+    env,
+    chatId,
+    "💬 ДИАЛОГИ\n\n" +
+    "История общения с клиентами сохраняется автоматически.\n\n" +
+    "Для просмотра полной истории пока используем логи Worker."
+  );
+
+  return new Response("OK");
+}
+    if (text === "📊 Статистика") {
+  if (!env.CRM) {
+    await sendAdminBotMessage(
+      env,
+      chatId,
+      "⚠️ CRM KV не подключён."
+    );
+
+    return new Response("OK");
+  }
+
+  const list = await env.CRM.list();
+
+  let clients = 0;
+  let orders = 0;
+
+  for (const key of list.keys) {
+    const client = await env.CRM.get(key.name, "json");
+
+    if (!client) {
+      continue;
+    }
+
+    clients++;
+
+    if (Array.isArray(client.orders)) {
+      orders += client.orders.length;
+    }
+  }
+
+  await sendAdminBotMessage(
+    env,
+    chatId,
+    "📊 СТАТИСТИКА\n\n" +
+    "👥 Клиентов: " + clients + "\n" +
+    "📦 Заказов: " + orders + "\n\n" +
+    "🌸 FLOWERRR CRM"
+  );
+
+  return new Response("OK");
+}
     return new Response("OK");
 
   } catch (error) {
