@@ -52,6 +52,40 @@ if (url.pathname === "/bot-info") {
     }
   );
 }
+    // Проверка webhook обоих ботов
+if (url.pathname === "/webhook-info") {
+
+  const clientResponse = await fetch(
+    "https://api.telegram.org/bot" +
+    env.TELEGRAM_TOKEN +
+    "/getWebhookInfo"
+  );
+
+  const adminResponse = await fetch(
+    "https://api.telegram.org/bot" +
+    env.ADMIN_BOT_TOKEN +
+    "/getWebhookInfo"
+  );
+
+  const clientWebhook = await clientResponse.json();
+  const adminWebhook = await adminResponse.json();
+
+  return new Response(
+    JSON.stringify(
+      {
+        client_bot: clientWebhook,
+        admin_bot: adminWebhook
+      },
+      null,
+      2
+    ),
+    {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  );
+}
     
     // Проверка Worker
     if (url.pathname === "/") {
