@@ -156,10 +156,6 @@ if (url.pathname === "/admin-telegram" && request.method === "POST") {
     const text = update.message.text || "";
 
     // Разрешаем доступ только владельцу
-    if (String(chatId) !== "641017166") {
-      return new Response("OK");
-    }
-
     if (text === "/start" || text === "/admin") {
       await sendAdminMenu(env, chatId);
       return new Response("OK");
