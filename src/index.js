@@ -24,25 +24,46 @@ headers: {
       return new Response("FLOWERRR AI 🌸 Бот работает!");
     }
 
-    // Установка Telegram webhook
-    if (url.pathname === "/setup") {
-      const webhookUrl = url.origin + "/telegram";
+    // Установка webhook для обоих Telegram-ботов
+if (url.pathname === "/setup") {
+  const webhookUrl = url.origin + "/telegram";
 
-      const telegramUrl =
-        "https://api.telegram.org/bot" +
-        env.TELEGRAM_TOKEN +
-        "/setWebhook?url=" +
-        encodeURIComponent(webhookUrl);
+  // Клиентский бот
+  const telegramUrl =
+    "https://api.telegram.org/bot" +
+    env.TELEGRAM_TOKEN +
+    "/setWebhook?url=" +
+    encodeURIComponent(webhookUrl);
 
-      const response = await fetch(telegramUrl);
-      const result = await response.json();
+  const telegramResponse = await fetch(telegramUrl);
+  const telegramResult = await telegramResponse.json();
 
-      return new Response(JSON.stringify(result, null, 2), {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
+  // Admin Bot
+  const adminTelegramUrl =
+    "https://api.telegram.org/bot" +
+    env.ADMIN_BOT_TOKEN +
+    "/setWebhook?url=" +
+    encodeURIComponent(webhookUrl);
+
+  const adminResponse = await fetch(adminTelegramUrl);
+  const adminResult = await adminResponse.json();
+
+  return new Response(
+    JSON.stringify(
+      {
+        client_bot: telegramResult,
+        admin_bot: adminResult
+      },
+      null,
+      2
+    ),
+    {
+      headers: {
+        "Content-Type": "application/json"
+      }
     }
+  );
+}
 
     // Telegram webhook
     if (url.pathname === "/telegram" && request.method === "POST") {
