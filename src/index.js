@@ -171,6 +171,11 @@ if (url.pathname === "/admin-telegram" && request.method === "POST") {
       return new Response("OK");
     }
 
+    if (text === "👥 Клиенты") {
+  await sendAdminClients(env, chatId);
+
+  return new Response("OK");
+}
     return new Response("OK");
 
   } catch (error) {
