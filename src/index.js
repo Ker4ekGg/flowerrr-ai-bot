@@ -183,30 +183,6 @@ if (url.pathname === "/admin-telegram" && request.method === "POST") {
     if (url.pathname === "/telegram" && request.method === "POST") {
       try {
         const update = await request.json();
-
-        // ================================
-        // FLOWERRR CRM — ADMIN MENU
-        // ================================
-
-if (
-  update.message &&
-  update.message.chat &&
-  String(update.message.chat.id) === "641017166"
-) {
-  const adminText = update.message.text || "";
-
-  if (adminText === "/admin" || adminText === "🌸 FLOWERRR CRM") {
-    await sendAdminMenu(env, update.message.chat.id);
-
-    return new Response("OK");
-  }
-
-  if (adminText === "📋 Заказы") {
-    await sendAdminOrders(env, update.message.chat.id);
-
-    return new Response("OK");
-  }
-}
         
         console.log("TELEGRAM UPDATE:", JSON.stringify(update));
         if (!update.message) {
