@@ -61,6 +61,34 @@ headers: {
 : "не указан";
 
 const telegramName = update.message.from?.first_name || "не указано";
+        // CRM — создаём или обновляем карточку клиента
+if (env.CRM) {
+  const crmKey = String(chatId);
+
+  let client = await env.CRM.get(crmKey, "json");
+
+  if (!client) {
+    client = {
+      chatId: chatId,
+      telegramUsername: telegramUsername,
+      telegramName: telegramName,
+      firstSeen: new Date().toISOString(),
+      lastSeen: new Date().toISOString(),
+      ordersCount: 0,
+      lastMessage: text
+    };
+  } else {
+    client.telegramUsername = telegramUsername;
+    client.telegramName = telegramName;
+    client.lastSeen = new Date().toISOString();
+    client.lastMessage = text;
+  }
+
+  await env.CRM.put(
+    crmKey,
+    JSON.stringify(client)
+  );
+}
 
         // Получаем текущее состояние заказа
        const savedOrder = env.ORDERS
