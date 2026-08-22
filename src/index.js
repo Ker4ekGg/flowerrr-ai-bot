@@ -450,8 +450,16 @@ if (env.CRM) {
   let client = await env.CRM.get(crmKey, "json");
 
   if (client) {
+    // Увеличиваем количество заказов
     client.ordersCount = (client.ordersCount || 0) + 1;
-    client.lastOrder = {
+
+    // Создаём массив истории, если его ещё нет
+    if (!Array.isArray(client.orders)) {
+      client.orders = [];
+    }
+
+    // Создаём новый заказ
+    const newOrder = {
       orderNumber: savedOrder.orderNumber,
       bouquet: savedOrder.bouquet,
       budget: savedOrder.budget,
@@ -461,6 +469,21 @@ if (env.CRM) {
       clientName: savedOrder.name,
       createdAt: new Date().toISOString()
     };
+
+    // Добавляем новый заказ в историю
+    client.orders.push(newOrder);
+
+    // Последний заказ
+    client.lastOrder = newOrder;
+
+    // Статус клиента
+    client.status =
+      client.ordersCount > 1
+        ? "repeat"
+        : "ordered";
+
+    // Последний контакт
+    client.lastContact = new Date().toISOString();
 
     await env.CRM.put(
       crmKey,
