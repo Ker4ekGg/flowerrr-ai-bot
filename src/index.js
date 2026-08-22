@@ -19,6 +19,40 @@ headers: {
 });
 }
 
+    // Проверка обоих Telegram-ботов
+if (url.pathname === "/bot-info") {
+  const clientResponse = await fetch(
+    "https://api.telegram.org/bot" +
+    env.TELEGRAM_TOKEN +
+    "/getMe"
+  );
+
+  const adminResponse = await fetch(
+    "https://api.telegram.org/bot" +
+    env.ADMIN_BOT_TOKEN +
+    "/getMe"
+  );
+
+  const clientBot = await clientResponse.json();
+  const adminBot = await adminResponse.json();
+
+  return new Response(
+    JSON.stringify(
+      {
+        client_bot: clientBot,
+        admin_bot: adminBot
+      },
+      null,
+      2
+    ),
+    {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  );
+}
+    
     // Проверка Worker
     if (url.pathname === "/") {
       return new Response("FLOWERRR AI 🌸 Бот работает!");
