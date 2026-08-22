@@ -733,8 +733,39 @@ JSON.stringify(result)
 return result;
 }
 
+async function sendAdminBotMessage(env, chatId, text, keyboard) {
+  const body = {
+    chat_id: chatId,
+    text: text
+  };
+
+  if (keyboard) {
+    body.reply_markup = {
+      keyboard: keyboard,
+      resize_keyboard: true
+    };
+  }
+
+  const telegramUrl =
+    "https://api.telegram.org/bot" +
+    env.ADMIN_BOT_TOKEN +
+    "/sendMessage";
+
+  const response = await fetch(telegramUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  const result = await response.text();
+
+  console.log("Admin Telegram response:", result);
+}
+
 async function sendAdminMenu(env, chatId) {
-  await sendMessage(
+  await sendAdminBotMessage(
     env,
     chatId,
     "🌸 FLOWERRR CRM\n\n" +
@@ -749,7 +780,7 @@ async function sendAdminMenu(env, chatId) {
 
 async function sendAdminOrders(env, chatId) {
   if (!env.CRM) {
-    await sendMessage(
+    await sendAdminBotMessage(
       env,
       chatId,
       "⚠️ CRM KV не подключён."
@@ -761,7 +792,7 @@ async function sendAdminOrders(env, chatId) {
   const list = await env.CRM.list();
 
   if (!list.keys.length) {
-    await sendMessage(
+    await sendAdminBotMessage(
       env,
       chatId,
       "📋 ЗАКАЗЫ\n\n" +
@@ -783,7 +814,7 @@ async function sendAdminOrders(env, chatId) {
       : [];
 
     for (const order of orders) {
-      await sendMessage(
+      await sendAdminBotMessage(
         env,
         chatId,
         "📋 НОВЫЙ ЗАКАЗ\n\n" +
