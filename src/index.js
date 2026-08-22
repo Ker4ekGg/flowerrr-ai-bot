@@ -26,32 +26,37 @@ headers: {
 
     // Установка webhook для обоих Telegram-ботов
 if (url.pathname === "/setup") {
-  const webhookUrl = url.origin + "/telegram";
 
-  // Клиентский бот
-  const telegramUrl =
+  // Основной FLOWERRR AI бот
+  const clientWebhookUrl = url.origin + "/telegram";
+
+  const clientTelegramUrl =
     "https://api.telegram.org/bot" +
     env.TELEGRAM_TOKEN +
     "/setWebhook?url=" +
-    encodeURIComponent(webhookUrl);
+    encodeURIComponent(clientWebhookUrl);
 
-  const telegramResponse = await fetch(telegramUrl);
-  const telegramResult = await telegramResponse.json();
+  const clientResponse = await fetch(clientTelegramUrl);
+  const clientResult = await clientResponse.json();
 
-  // Admin Bot
+
+  // Flower Admin Bot
+  const adminWebhookUrl = url.origin + "/admin-telegram";
+
   const adminTelegramUrl =
     "https://api.telegram.org/bot" +
     env.ADMIN_BOT_TOKEN +
     "/setWebhook?url=" +
-    encodeURIComponent(webhookUrl);
+    encodeURIComponent(adminWebhookUrl);
 
   const adminResponse = await fetch(adminTelegramUrl);
   const adminResult = await adminResponse.json();
 
+
   return new Response(
     JSON.stringify(
       {
-        client_bot: telegramResult,
+        client_bot: clientResult,
         admin_bot: adminResult
       },
       null,
@@ -65,6 +70,51 @@ if (url.pathname === "/setup") {
   );
 }
 
+    // Flower Admin Bot webhook
+if (url.pathname === "/admin-telegram" && request.method === "POST") {
+  try {
+    const update = await request.json();
+
+    console.log(
+      "ADMIN TELEGRAM UPDATE:",
+      JSON.stringify(update)
+    );
+
+    if (!update.message) {
+      return new Response("OK");
+    }
+
+    const chatId = update.message.chat.id;
+    const text = update.message.text || "";
+
+    // Разрешаем доступ только владельцу
+    if (String(chatId) !== "641017166") {
+      return new Response("OK");
+    }
+
+    if (text === "/start" || text === "/admin") {
+      await sendAdminMenu(env, chatId);
+      return new Response("OK");
+    }
+
+    if (text === "🌸 FLOWERRR CRM") {
+      await sendAdminMenu(env, chatId);
+      return new Response("OK");
+    }
+
+    if (text === "📋 Заказы") {
+      await sendAdminOrders(env, chatId);
+      return new Response("OK");
+    }
+
+    return new Response("OK");
+
+  } catch (error) {
+    console.error("ADMIN BOT ERROR:", error);
+    return new Response("OK");
+  }
+}
+    
     // Telegram webhook
     if (url.pathname === "/telegram" && request.method === "POST") {
       try {
