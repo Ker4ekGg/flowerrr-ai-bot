@@ -684,7 +684,7 @@ async function sendAdminOrders(env, chatId) {
         "📅 Дата: " + (order.date || "—") + "\n" +
         "🚚 Получение: " + (order.delivery || "—") + "\n" +
         "📍 Адрес: " + (order.address || "Самовывоз") + "\n" +
-        "👤 Клиент: " + (order.clientName  order.name  "—")
+        "👤 Клиент: " + (order.clientName order.name "—")
       );
     }
   }
