@@ -1,19 +1,23 @@
 {
-"name": "still-heart-f419",
-"main": "index.js",
-"compatibility_date": "2026-08-18",
-"workers_dev": true,
-"ai": {
-"binding": "AI"
-},
-"kv_namespaces": [
-{
-"binding": "ORDERS",
-"id": "a3eb7bbe3a874b31b5dba44cb8b45332"
-},
-{
-"binding": "CHAT_HISTORY",
-"id": "4c1b34708c714e0d97792c94c7ba2c63"
-}
-]
+  "name": "still-heart-f419",
+  "main": "index.js",
+  "compatibility_date": "2026-08-18",
+  "workers_dev": true,
+  "ai": {
+    "binding": "AI"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "ORDERS",
+      "id": "a3eb7bbe3a874b31b5dba44cb8b45332"
+    },
+    {
+      "binding": "CHAT_HISTORY",
+      "id": "4c1b34708c714e0d97792c94c7ba2c63"
+    },
+    {
+      "binding": "CRM",
+      "id": "dc3c3b4d4b0148639de80fe658f8ccb9"
+    }
+  ]
 }
