@@ -778,6 +778,66 @@ async function sendAdminMenu(env, chatId) {
   );
 }
 
+async function sendAdminClients(env, chatId) {
+  if (!env.CRM) {
+    await sendAdminBotMessage(
+      env,
+      chatId,
+      "⚠️ CRM KV не подключён."
+    );
+
+    return;
+  }
+
+  const list = await env.CRM.list();
+
+  if (!list.keys.length) {
+    await sendAdminBotMessage(
+      env,
+      chatId,
+      "👥 КЛИЕНТЫ\n\n" +
+      "Пока клиентов нет."
+    );
+
+    return;
+  }
+
+  let message = "👥 КЛИЕНТЫ\n\n";
+
+  let number = 1;
+
+  for (const key of list.keys) {
+    const client = await env.CRM.get(key.name, "json");
+
+    if (!client) {
+      continue;
+    }
+
+    const orders = Array.isArray(client.orders)
+      ? client.orders
+      : [];
+
+    message +=
+      number + ". 👤 " +
+      (client.telegramName || "Без имени") +
+      "\n" +
+      "📱 " +
+      (client.telegramUsername || "не указан") +
+      "\n" +
+      "📦 Заказов: " +
+      orders.length +
+      "\n\n";
+
+    number++;
+  }
+
+  await sendAdminBotMessage(
+    env,
+    chatId,
+    message
+  );
+}
+
 async function sendAdminOrders(env, chatId) {
   if (!env.CRM) {
     await sendAdminBotMessage(
