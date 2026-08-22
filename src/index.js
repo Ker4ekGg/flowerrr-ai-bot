@@ -443,6 +443,32 @@ orderText
 // Удаляем заказ из KV
 await env.ORDERS.delete(String(chatId));
 
+  // CRM — сохраняем информацию о заказе
+if (env.CRM) {
+  const crmKey = String(chatId);
+
+  let client = await env.CRM.get(crmKey, "json");
+
+  if (client) {
+    client.ordersCount = (client.ordersCount || 0) + 1;
+    client.lastOrder = {
+      orderNumber: savedOrder.orderNumber,
+      bouquet: savedOrder.bouquet,
+      budget: savedOrder.budget,
+      date: savedOrder.date,
+      delivery: savedOrder.delivery,
+      address: savedOrder.address || "Самовывоз",
+      clientName: savedOrder.name,
+      createdAt: new Date().toISOString()
+    };
+
+    await env.CRM.put(
+      crmKey,
+      JSON.stringify(client)
+    );
+  }
+}
+
 // Подтверждение клиенту
 await sendMessage(
 env,
