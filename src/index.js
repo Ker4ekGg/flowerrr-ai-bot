@@ -48,6 +48,31 @@ headers: {
     if (url.pathname === "/telegram" && request.method === "POST") {
       try {
         const update = await request.json();
+
+        // ================================
+        // FLOWERRR CRM — ADMIN MENU
+        // ================================
+
+if (
+  update.message &&
+  update.message.chat &&
+  String(update.message.chat.id) === "641017166"
+) {
+  const adminText = update.message.text || "";
+
+  if (adminText === "/admin" || adminText === "🌸 FLOWERRR CRM") {
+    await sendAdminMenu(env, update.message.chat.id);
+
+    return new Response("OK");
+  }
+
+  if (adminText === "📋 Заказы") {
+    await sendAdminOrders(env, update.message.chat.id);
+
+    return new Response("OK");
+  }
+}
+        
         console.log("TELEGRAM UPDATE:", JSON.stringify(update));
         if (!update.message) {
           return new Response("OK");
@@ -597,6 +622,73 @@ JSON.stringify(result)
 return result;
 }
 
+async function sendAdminMenu(env, chatId) {
+  await sendMessage(
+    env,
+    chatId,
+    "🌸 FLOWERRR CRM\n\n" +
+    "Добро пожаловать в панель управления.\n\n" +
+    "Выберите раздел:",
+    [
+      ["📋 Заказы", "👥 Клиенты"],
+      ["💬 Диалоги", "📊 Статистика"]
+    ]
+  );
+}
+
+async function sendAdminOrders(env, chatId) {
+  if (!env.CRM) {
+    await sendMessage(
+      env,
+      chatId,
+      "⚠️ CRM KV не подключён."
+    );
+
+    return;
+  }
+
+  const list = await env.CRM.list();
+
+  if (!list.keys.length) {
+    await sendMessage(
+      env,
+      chatId,
+      "📋 ЗАКАЗЫ\n\n" +
+      "Пока заказов нет."
+    );
+
+    return;
+  }
+
+  for (const key of list.keys) {
+    const client = await env.CRM.get(key.name, "json");
+
+    if (!client) {
+      continue;
+    }
+
+    const orders = Array.isArray(client.orders)
+      ? client.orders
+      : [];
+
+    for (const order of orders) {
+      await sendMessage(
+        env,
+        chatId,
+        "📋 НОВЫЙ ЗАКАЗ\n\n" +
+        "🔢 " + (order.orderNumber || "—") + "\n" +
+        "👤 " + (client.telegramName || "—") + "\n" +
+        "📱 " + (client.telegramUsername || "не указан") + "\n\n" +
+        "💐 Букет: " + (order.bouquet || "—") + "\n" +
+        "💰 Бюджет: " + (order.budget || "—") + "\n" +
+        "📅 Дата: " + (order.date || "—") + "\n" +
+        "🚚 Получение: " + (order.delivery || "—") + "\n" +
+        "📍 Адрес: " + (order.address || "Самовывоз") + "\n" +
+        "👤 Клиент: " + (order.clientName  order.name  "—")
+      );
+    }
+  }
+}
 
 async function askAI(env, chatId, userText) {
 const historyKey = String(chatId);
