@@ -61,6 +61,41 @@ headers: {
 : "не указан";
 
 const telegramName = update.message.from?.first_name || "не указано";
+
+        // CRM — создаём карточку клиента при первом обращении
+if (env.CRM) {
+  const crmKey = String(chatId);
+
+  let client = await env.CRM.get(crmKey, "json");
+
+  if (!client) {
+    client = {
+      chatId: chatId,
+      telegramUsername: telegramUsername,
+      telegramName: telegramName,
+      status: "new",
+      ordersCount: 0,
+      orders: [],
+      firstContact: new Date().toISOString(),
+      lastContact: new Date().toISOString()
+    };
+
+    await env.CRM.put(
+      crmKey,
+      JSON.stringify(client)
+    );
+  } else {
+    client.telegramUsername = telegramUsername;
+    client.telegramName = telegramName;
+    client.lastContact = new Date().toISOString();
+
+    await env.CRM.put(
+      crmKey,
+      JSON.stringify(client)
+    );
+  }
+}
+        
         // CRM — создаём или обновляем карточку клиента
 if (env.CRM) {
   const crmKey = String(chatId);
