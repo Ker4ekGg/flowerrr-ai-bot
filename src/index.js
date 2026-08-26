@@ -155,6 +155,23 @@ if (url.pathname === "/admin-telegram" && request.method === "POST") {
     const chatId = update.message.chat.id;
     const text = update.message.text || "";
 
+    // ================================
+    // ПОЛУЧЕНИЕ PHOTO FILE ID
+    // ================================
+
+if (update.message.photo) {
+  const photos = update.message.photo;
+  const photo = photos[photos.length - 1];
+
+  await sendAdminBotMessage(
+    env,
+    chatId,
+    "📸 PHOTO FILE ID:\n\n" + photo.file_id
+  );
+
+  return new Response("OK");
+}
+
     // Разрешаем доступ только владельцу
     if (text === "/start" || text === "/admin") {
       await sendAdminMenu(env, chatId);
@@ -248,23 +265,6 @@ if (url.pathname === "/admin-telegram" && request.method === "POST") {
 
         const chatId = update.message.chat.id;
         const text = update.message.text || "";
-
-        // ================================
-        // ПОЛУЧЕНИЕ PHOTO FILE ID
-        // ================================
-
-if (update.message.photo) {
-  const photos = update.message.photo;
-  const photo = photos[photos.length - 1];
-
-  await sendAdminBotMessage(
-    env,
-    chatId,
-    "📸 PHOTO FILE ID:\n\n" + photo.file_id
-  );
-
-  return new Response("OK");
-}
         
         const telegramUsername = update.message.from?.username
 ? "@" + update.message.from.username
