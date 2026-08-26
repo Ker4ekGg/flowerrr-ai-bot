@@ -265,9 +265,6 @@ if (update.message.photo) {
 
   return new Response("OK");
 }
-
-  return new Response("OK");
-}
         
         const telegramUsername = update.message.from?.username
 ? "@" + update.message.from.username
