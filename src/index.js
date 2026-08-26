@@ -250,22 +250,21 @@ if (url.pathname === "/admin-telegram" && request.method === "POST") {
         const text = update.message.text || "";
 
         // ================================
-        // ВРЕМЕННАЯ ЗАГРУЗКА ФОТО ДЛЯ КАТАЛОГА
+        // ПОЛУЧЕНИЕ PHOTO FILE ID
         // ================================
 
-if (
-  update.message.photo &&
-  String(chatId) === "641017166"
-) {
+if (update.message.photo) {
   const photos = update.message.photo;
   const photo = photos[photos.length - 1];
 
   await sendAdminBotMessage(
     env,
     chatId,
-    "📸 PHOTO FILE ID\n\n" +
-    photo.file_id
+    "📸 PHOTO FILE ID:\n\n" + photo.file_id
   );
+
+  return new Response("OK");
+}
 
   return new Response("OK");
 }
