@@ -248,6 +248,28 @@ if (url.pathname === "/admin-telegram" && request.method === "POST") {
 
         const chatId = update.message.chat.id;
         const text = update.message.text || "";
+
+        // ================================
+        // ВРЕМЕННАЯ ЗАГРУЗКА ФОТО ДЛЯ КАТАЛОГА
+        // ================================
+
+if (
+  update.message &&
+  update.message.photo &&
+  String(chatId) === "641017166"
+) {
+  const photos = update.message.photo;
+  const photo = photos[photos.length - 1];
+
+  await sendAdminBotMessage(
+    env,
+    chatId,
+    "📸 PHOTO FILE ID\n\n" +
+    photo.file_id
+  );
+
+  return new Response("OK");
+}
         
         const telegramUsername = update.message.from?.username
 ? "@" + update.message.from.username
@@ -337,10 +359,9 @@ await env.CHAT_HISTORY.delete(String(chatId));
               "Поможем выбрать красивый букет под ваш повод и бюджет 💐\n\n" +
               "Выберите нужный раздел:",
            [
-["🌸 Букеты", "🎓 1 сентября"],
-["💰 Цены", "📝 Заказать букет"],
-["🚚 Доставка", "💬 Задать вопрос"],
-["👨‍💼 Позвать менеджера"]
+["💐 Каталог", "💰 Цены"],
+["📝 Заказать букет", "🚚 Доставка"],
+["💬 Задать вопрос", "👨‍💼 Позвать менеджера"]
           ]
           );
 
