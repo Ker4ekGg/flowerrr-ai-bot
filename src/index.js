@@ -254,7 +254,6 @@ if (url.pathname === "/admin-telegram" && request.method === "POST") {
         // ================================
 
 if (
-  update.message &&
   update.message.photo &&
   String(chatId) === "641017166"
 ) {
