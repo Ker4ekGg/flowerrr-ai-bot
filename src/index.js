@@ -1005,6 +1005,24 @@ chatId,
 return new Response("OK");
 }
 
+        // ================================
+        // ПОЛУЧЕНИЕ PHOTO FILE ID
+        // ================================
+
+if (update.message.photo) {
+
+  const photos = update.message.photo;
+  const photo = photos[photos.length - 1];
+
+  await sendAdminBotMessage(
+    env,
+    chatId,
+    "📸 PHOTO FILE ID:\n\n" +
+    photo.file_id
+  );
+
+  return new Response("OK");
+}
 // Обычный вопрос → AI
 const answer = await askAI(env, chatId, text);
 
