@@ -261,17 +261,17 @@ if (update.message.photo) {
         console.log("TELEGRAM UPDATE:", JSON.stringify(update));
 
         // ================================
-        // INLINE-КНОПКИ КАТАЛОГА 
+        // INLINE-КНОПКИ КАТАЛОГА
         // ================================
 
-if (update.callback_query) {
-  
+        if (update.callback_query) {
   const callback = update.callback_query;
-  const chatId = callback.message.chat.id;
-  const messageId = callback.message.message_id;
-  const data = callback.data;
+  const callbackChatId = callback.message.chat.id;
+  const callbackMessageId = callback.message.message_id;
+  const callbackData = callback.data;
 
- // Убираем "часики" на кнопке Telegram
+  // Убираем "часики" на кнопке Telegram
+
   await fetch(
     "https://api.telegram.org/bot" +
       env.TELEGRAM_TOKEN +
@@ -292,51 +292,57 @@ if (update.callback_query) {
   const catalogState =
     env.ORDERS
       ? await env.ORDERS.get(
-          String(chatId),
+          String(callbackChatId),
           "json"
         )
       : null;
+          
   if (
     !catalogState ||
     catalogState.step !== "catalog"
   ) {
     return new Response("OK");
   }
+
   // ================================
   // СЛЕДУЮЩИЙ БУКЕТ
   // ================================
-        
-  if (data === "catalog_next") {
+
+  if (callbackData === "catalog_next") {
     
     const nextIndex =
       (catalogState.bouquetIndex + 1) %
       bouquets.length;
+    
     const bouquet = bouquets[nextIndex];
+
     const caption =
       "🌸 " + bouquet.name + "\n\n" +
       "💰 " + bouquet.price + "\n\n" +
       bouquet.feature + "\n\n" +
       "Букет " + (nextIndex + 1) +
       " из " + bouquets.length;
+    
     await env.ORDERS.put(
-      String(chatId),
+      String(callbackChatId),
       JSON.stringify({
         step: "catalog",
         bouquetIndex: nextIndex,
-        messageId: messageId
+        messageId: callbackMessageId
       }),
       {
         expirationTtl: 3600
       }
     );
+
     await editCatalogPhoto(
       env,
-      chatId,
-      messageId,
+      callbackChatId,
+      callbackMessageId,
       bouquet.photo,
       caption
     );
-    
+
     return new Response("OK");
   }
 
@@ -344,29 +350,30 @@ if (update.callback_query) {
   // ПРЕДЫДУЩИЙ БУКЕТ
   // ================================
 
-  if (data === "catalog_prev") {
+  if (callbackData === "catalog_prev") {
     
     let previousIndex =
       catalogState.bouquetIndex - 1;
-    
+
     if (previousIndex < 0) {
       previousIndex = bouquets.length - 1;
     }
 
     const bouquet = bouquets[previousIndex];
+
     const caption =
       "🌸 " + bouquet.name + "\n\n" +
       "💰 " + bouquet.price + "\n\n" +
       bouquet.feature + "\n\n" +
       "Букет " + (previousIndex + 1) +
       " из " + bouquets.length;
-
+   
     await env.ORDERS.put(
-      String(chatId),
+      String(callbackChatId),
       JSON.stringify({
         step: "catalog",
         bouquetIndex: previousIndex,
-        messageId: messageId
+        messageId: callbackMessageId
       }),
       {
         expirationTtl: 3600
@@ -374,9 +381,8 @@ if (update.callback_query) {
     );
 
     await editCatalogPhoto(
-      env,
-      chatId,
-      messageId,
+      env,callbackChatId,
+      callbackMessageId,
       bouquet.photo,
       caption
     );
@@ -388,11 +394,11 @@ if (update.callback_query) {
   // ЗАКАЗАТЬ ТЕКУЩИЙ БУКЕТ
   // ================================
 
-  if (data === "catalog_order") {
-
+  if (callbackData === "catalog_order") {
+    
     const bouquet =
       bouquets[catalogState.bouquetIndex];
-
+    
     const order = {
       orderNumber: "FLOW-" + Date.now(),
       step: "budget",
@@ -402,7 +408,7 @@ if (update.callback_query) {
     };
 
     await env.ORDERS.put(
-      String(chatId),
+      String(callbackChatId),
       JSON.stringify(order),
       {
         expirationTtl: 86400
@@ -411,7 +417,7 @@ if (update.callback_query) {
 
     await sendMessage(
       env,
-      chatId,
+      callbackChatId,
       "🌸 Вы выбрали:\n\n" +
       "💐 " + bouquet.name + "\n" +
       "💰 " + bouquet.price + "\n\n" +
@@ -429,40 +435,50 @@ if (update.callback_query) {
   // В МЕНЮ
   // ================================
 
-  if (data === "catalog_menu") {
+  if (callbackData === "catalog_menu") {
+
     if (env.ORDERS) {
       await env.ORDERS.delete(
-        String(chatId)
+        String(callbackChatId)
       );
     }
 
     await sendMessage(
       env,
-      chatId,
+      callbackChatId,
       "🌸 Главное меню\n\n" +
       "Выберите нужный раздел:",
       [
         ["💐 Каталог", "💰 Цены"],
         ["📝 Заказать букет", "🚚 Доставка"],
         ["💬 Задать вопрос", "👨‍💼 Позвать менеджера"]
-              ]
-          );
-        return new Response("OK");
-      }
-          return new Response("OK");
-        
-        if (!update.message) {
-          return new Response("OK");
-        }
+      ]
+    );
 
-        const chatId = update.message.chat.id;
-        const text = update.message.text || "";
-        
-        const telegramUsername = update.message.from?.username
-? "@" + update.message.from.username
-: "не указан";
+    return new Response("OK");
+  }
 
-const telegramName = update.message.from?.first_name || "не указано";
+  return new Response("OK");
+}
+
+// ================================
+// ОБЫЧНОЕ СООБЩЕНИЕ
+// ================================
+
+if (!update.message) {
+  return new Response("OK");
+}
+
+const chatId = update.message.chat.id;
+const text = update.message.text || "";
+        
+const telegramUsername =
+  update.message.from?.username
+    ? "@" + update.message.from.username
+    : "не указан";
+
+const telegramName =
+  update.message.from?.first_name || "не указано";
 
         // CRM — создаём карточку клиента при первом обращении
 if (env.CRM) {
@@ -1267,29 +1283,41 @@ if (update.message.photo) {
   return new Response("OK");
 }
 // Обычный вопрос → AI
-const answer = await askAI(env, chatId, text);
+const answer = await askAI(
+  env,
+  chatId,
+  text
+);
 
 // Отправляем клиенту ответ AI
-await sendMessage(env, chatId, answer);
+await sendMessage(
+  env,
+  chatId,
+  answer
+);
 
 // Сохраняем лог общения для Flower Admin
 await sendAdminMessage(
-env,
-"💬 ДИАЛОГ С КЛИЕНТОМ\n\n" +
-"👤 Имя: " + telegramName + "\n" +
-"📱 Telegram: " + telegramUsername + "\n" +
-"🆔 ID: " + chatId + "\n\n" +
-"👤 Клиент:\n" +
-text + "\n\n" +
-"🤖 FLOWERRR AI:\n" +
-answer
+  env,
+  "💬 ДИАЛОГ С КЛИЕНТОМ\n\n" +
+  "👤 Имя: " + telegramName + "\n" +
+  "📱 Telegram: " + telegramUsername + "\n" +
+  "🆔 ID: " + chatId + "\n\n" +
+  "👤 Клиент:\n" +
+  text + "\n\n" +
+  "🤖 FLOWERRR AI:\n" +
+  answer
 );
 
 return new Response("OK");
+
 } catch (error) {
-console.error(error);
-return new Response("OK");
+
+  console.error("TELEGRAM WEBHOOK ERROR:", error);
+
+  return new Response("OK");
 }
+
 }
 
 return new Response("FLOWERRR AI 🌸");
