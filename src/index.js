@@ -364,57 +364,56 @@ await env.CHAT_HISTORY.delete(String(chatId));
         }
 
     // ================================
-    // FLOWERRR — КАТАЛОГ БУКЕТОВ
-    // ================================
-
+// FLOWERRR — КАТАЛОГ БУКЕТОВ
+// ================================
 const bouquets = [
   {
     name: "NOIR DESIRE",
     price: "6 490 ₽",
     feature: "🎵 Ваша песня по QR-коду",
-    photo: "AgACAgIAAxkBAAMyao9zrQXm-Hj3XRqCCtQz5rlX26QAAm4maxuPtHhIAfZicmU3g9kBAAMCAAN4AAM9BA"
+    photo: "AgACAgIAAxkBAAIBcWqPjhdliaEB61u0RUPPfhdX15nBAAJuJmsbj7R4SNAjKTokLwHVAQADAgADeAADPQQ"
   },
   {
     name: "SUNSET SYMPHONY",
     price: "5 990 ₽",
     feature: "💌 Личное послание",
-    photo: "AgACAgIAAxkBAAM3ao98blqfRwN-AbVjbmJayu4ukoYAAm8maxuPtHhIKmLtYHdinSYBAAMCAAN4AAM9BA"
+    photo: "AgACAgIAAxkBAAIBdmqPj-HJFiXZU61pPTvDzIT6GuQOAAJvJmsbj7R4SC5n22dHCW0ZAQADAgADeAADPQQ"
   },
   {
     name: "CLOUD WHISPER",
     price: "5 790 ₽",
     feature: "📸 Ваше фото в букете",
-    photo: "AgACAgIAAxkBAAM5ao98h9RSJ1EjHDr5y0YKq5fsJXcAAnAmaxuPtHhIxm2kaB_f6AIBAAMCAAN4AAM9BA"
+    photo: "AgACAgIAAxkBAAIBd2qPj-XTaRpkGV7qSHRaM9fN-E48AAJwJmsbj7R4SEJ_MplBfpEtAQADAgADeAADPQQ"
   },
   {
     name: "BERRY CRUSH",
     price: "5 490 ₽",
     feature: "📍 Координаты особенного места",
-    photo: "AgACAgIAAxkBAAM7ao98pv8p_W6yTiIscweCjxGcCVwAAnEmaxuPtHhIC_GF74DyiWoBAAMCAAN4AAM9BA"
+    photo: "AgACAgIAAxkBAAIBeGqPj-g9Jrb4mdlHnw_2j9yGOETtAAJxJmsbj7R4SHsSpCizM2yEAQADAgADeAADPQQ"
   },
   {
     name: "RED FLAG",
     price: "5 990 ₽",
     feature: "📅 Ваша важная дата",
-    photo: "AgACAgIAAxkBAAM9ao981FWa8XLjwsJMwlZKyovEwIcAAnImaxuPtHhIRpCHLXv1a7EBAAMCAAN4AAM9BA"
+    photo: "AgACAgIAAxkBAAIBeWqPj-z9HX4QMO_d67fnY1m2Hh1eAAJyJmsbj7R4SLCc1c9wri3MAQADAgADeAADPQQ"
   },
   {
     name: "POP FICTION",
     price: "5 490 ₽",
     feature: "🎁 Маленький подарок-сюрприз",
-    photo: "AgACAgIAAxkBAAM_ao986mF65jyQ4aFp_6y3BB2CpYwAAnMmaxuPtHhIiai_GrMTE70BAAMCAAN4AAM9BA"
+    photo: "AgACAgIAAxkBAAIBemqPj-8DMD1BTXVtUHmuGh7kJ_RFAAJzJmsbj7R4SDIVfsfgojRNAQADAgADeAADPQQ"
   },
   {
     name: "WILD POETRY",
     price: "6 290 ₽",
     feature: "🪄 Букет с секретом",
-    photo: "AgACAgIAAxkBAANBao99BL7HpPC-AAHjDGMYZo5sFNSVAAJ0Jmsbj7R4SDl1l_jdRuO4AQADAgADeAADPQQ"
+    photo: "AgACAgIAAxkBAAIBe2qPj_MFrWvJjqKZov_eMZwazw5fAAJ0Jmsbj7R4SMlUE8sOukTTAQADAgADeAADPQQ"
   },
   {
     name: "AFTER MIDNIGHT",
     price: "5 990 ₽",
     feature: "🕯️ Оформим букет под особенный момент",
-    photo: "AgACAgIAAxkBAANDao99HIP_Z3HHJSUPi_aP5iNyXy4AAnUmaxuPtHhIrHLxS_cfayABAAMCAAN4AAM9BA"
+    photo: "AgACAgIAAxkBAAIBfGqPj_WFDHjJWjLwKakpAydIpV7ZAAJ1Jmsbj7R4SO1-nmvDZFbBAQADAgADeAADPQQ"
   }
 ];
 
