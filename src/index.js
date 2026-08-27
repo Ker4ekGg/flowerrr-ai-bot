@@ -425,36 +425,13 @@ const bouquets = [
 
 if (text === "💐 Каталог") {
 
-  const bouquet = bouquets[0];
+  console.log("CATALOG BUTTON RECEIVED");
 
-  const bouquetIndex = 0;
-
-   await sendPhoto(
+  await sendMessage(
     env,
     chatId,
-    bouquet.photo,
-    "🌸 " + bouquet.name + "\n\n" +
-    "💰 " + bouquet.price + "\n\n" +
-    bouquet.feature + "\n\n" +
-    "Букет " + (bouquetIndex + 1) + " из " + bouquets.length,
-    [
-      ["➡️ Следующий"],
-      ["📝 Заказать этот букет"],
-      ["🏠 В меню"]
-    ]
+    "🧪 Кнопка каталога получена.\n\nПроверяем отправку фото..."
   );
-    if (env.ORDERS) {
-    await env.ORDERS.put(
-      String(chatId),
-      JSON.stringify({
-        step: "catalog",
-        bouquetIndex: bouquetIndex
-      }),
-      {
-        expirationTtl: 3600
-      }
-    );
-  }
 
   return new Response("OK");
 }
