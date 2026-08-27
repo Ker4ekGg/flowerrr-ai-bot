@@ -259,6 +259,198 @@ if (update.message.photo) {
         const update = await request.json();
         
         console.log("TELEGRAM UPDATE:", JSON.stringify(update));
+
+        // ================================
+        // INLINE-КНОПКИ КАТАЛОГА 
+        // ================================
+
+if (update.callback_query) {
+  
+  const callback = update.callback_query;
+  const chatId = callback.message.chat.id;
+  const messageId = callback.message.message_id;
+  const data = callback.data;
+
+  // Убираем "часики" на кнопке Telegram
+  await fetch(
+    "https://api.telegram.org/bot" +
+    env.TELEGRAM_TOKEN +
+    "/answerCallbackQuery",
+    
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        callback_query_id: callback.id
+      })
+    }
+  );
+
+  // Получаем состояние каталога
+
+  const catalogState =
+    env.ORDERS
+      ? await env.ORDERS.get(
+          String(chatId),
+          "json"
+        )
+      : null;
+  if (
+    !catalogState ||
+    catalogState.step !== "catalog"
+  ) {
+    return new Response("OK");
+  }
+  // ================================
+  // СЛЕДУЮЩИЙ БУКЕТ
+  // ================================
+        
+  if (data === "catalog_next") {
+    
+    const nextIndex =
+      (catalogState.bouquetIndex + 1) %
+      bouquets.length;
+    const bouquet = bouquets[nextIndex];
+    const caption =
+      "🌸 " + bouquet.name + "\n\n" +
+      "💰 " + bouquet.price + "\n\n" +
+      bouquet.feature + "\n\n" +
+      "Букет " + (nextIndex + 1) +
+      " из " + bouquets.length;
+    await env.ORDERS.put(
+      String(chatId),
+      JSON.stringify({
+        step: "catalog",
+        bouquetIndex: nextIndex,
+        messageId: messageId
+      }),
+      {
+        expirationTtl: 3600
+      }
+    );
+    await editCatalogPhoto(
+      env,
+      chatId,
+      messageId,
+      bouquet.photo,
+      caption
+    );
+    
+    return new Response("OK");
+  }
+
+  // ================================
+  // ПРЕДЫДУЩИЙ БУКЕТ
+  // ================================
+
+  if (data === "catalog_prev") {
+    
+    let previousIndex =
+      catalogState.bouquetIndex - 1;
+    
+    if (previousIndex < 0) {
+      previousIndex = bouquets.length - 1;
+    }
+
+    const bouquet = bouquets[previousIndex];
+    const caption =
+      "🌸 " + bouquet.name + "\n\n" +
+      "💰 " + bouquet.price + "\n\n" +
+      bouquet.feature + "\n\n" +
+      "Букет " + (previousIndex + 1) +
+      " из " + bouquets.length;
+
+    await env.ORDERS.put(
+      String(chatId),
+      JSON.stringify({
+        step: "catalog",
+        bouquetIndex: previousIndex,
+        messageId: messageId
+      }),
+      {
+        expirationTtl: 3600
+      }
+    );
+
+    await editCatalogPhoto(
+      env,
+      chatId,
+      messageId,
+      bouquet.photo,
+      caption
+    );
+
+    return new Response("OK");
+  }
+
+  // ================================
+  // ЗАКАЗАТЬ ТЕКУЩИЙ БУКЕТ
+  // ================================
+
+  if (data === "catalog_order") {
+
+    const bouquet =
+      bouquets[catalogState.bouquetIndex];
+
+    const order = {
+      orderNumber: "FLOW-" + Date.now(),
+      step: "budget",
+      bouquet: bouquet.name,
+      bouquetPrice: bouquet.price,
+      createdAt: new Date().toISOString()
+    };
+
+    await env.ORDERS.put(
+      String(chatId),
+      JSON.stringify(order),
+      {
+        expirationTtl: 86400
+      }
+    );
+
+    await sendMessage(
+      env,
+      chatId,
+      "🌸 Вы выбрали:\n\n" +
+      "💐 " + bouquet.name + "\n" +
+      "💰 " + bouquet.price + "\n\n" +
+      "Отлично! Давайте оформим заказ.\n\n" +
+      "💰 Шаг 1 из 4\n\n" +
+      "Укажите ваш бюджет.\n\n" +
+      "Если хотите заказать именно этот букет по указанной цене — просто напишите:\n" +
+      "«По цене из каталога»"
+    );
+
+    return new Response("OK");
+  }
+
+  // ================================
+  // В МЕНЮ
+  // ================================
+
+  if (data === "catalog_menu") {
+    if (env.ORDERS) {
+      await env.ORDERS.delete(
+        String(chatId)
+      );
+    }
+
+    await sendMessage(
+      env,
+      chatId,
+      "🌸 Главное меню\n\n" +
+      "Выберите нужный раздел:",
+      [
+        ["💐 Каталог", "💰 Цены"],
+        ["📝 Заказать букет", "🚚 Доставка"],
+        ["💬 Задать вопрос", "👨‍💼 Позвать менеджера"]
+              ]
+          );
+        return new Response("OK");
+      }
+          return new Response("OK");
+        
         if (!update.message) {
           return new Response("OK");
         }
@@ -426,36 +618,85 @@ if (text === "💐 Каталог") {
   const bouquet = bouquets[0];
   const bouquetIndex = 0;
 
-  await sendPhoto(
-    env,
-    chatId,
-    bouquet.photo,
-    "🌸 " + bouquet.name + "\n\n" +
-    "💰 " + bouquet.price + "\n\n" +
-    bouquet.feature + "\n\n" +
-    "Букет " + (bouquetIndex + 1) + " из " + bouquets.length,
-    [
-      ["➡️ Следующий"],
-      ["📝 Заказать этот букет"],
-      ["🏠 В меню"]
-    ]
+  const caption = 
+    "🌸 " + bouquet.name + "\n\n" + 
+    "💰 " + bouquet.price + "\n\n" + 
+  bouquet.feature + "\n\n" + 
+    "Букет " + (bouquetIndex + 1) + 
+    " из " + bouquets.length;
+  const result = await sendPhoto( 
+    env, 
+    chatId, 
+    bouquet.photo, 
+    caption 
   );
-
+if ( 
+  result &&
+  result.ok &&
+  result.result &&
+  result.result.message_id
+) {
   if (env.ORDERS) {
-    await env.ORDERS.put(
-      String(chatId),
-      JSON.stringify({
-        step: "catalog",
-        bouquetIndex: bouquetIndex
-      }),
-      {
-        expirationTtl: 3600
+  await env.ORDERS.put(
+    String(chatId),
+    JSON.stringify({
+      step: "catalog",
+      bouquetIndex: bouquetIndex,
+      messageId: result.result.message_id
+    }),
+    {
+      expirationTtl: 3600
+    }
+  );
+}
+
+// Добавляем inline-кнопки
+await fetch(
+  "https://api.telegram.org/bot" +
+  env.TELEGRAM_TOKEN +
+  "/editMessageReplyMarkup",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      message_id: result.result.message_id,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "⬅️ Предыдущий",
+              callback_data: "catalog_prev"
+            },
+            {
+              text: "Следующий ➡️",
+              callback_data: "catalog_next"
+            }
+          ],
+          [
+            {
+              text: "📝 Заказать этот букет",
+              callback_data: "catalog_order"
+            }
+          ],
+          [
+            {
+              text: "🏠 В меню",
+              callback_data: "catalog_menu"
+            }
+          ]
+        ]
       }
-    );
+    })
+  }
+);
   }
 
-  return new Response("OK");
+  return new Response("OK"); 
 }
+
         // ================================
         // ЗАКАЗАТЬ ВЫБРАННЫЙ БУКЕТ
         // ================================
@@ -1442,6 +1683,73 @@ async function sendPhoto(env, chatId, photo, caption, keyboard) {
     "SEND PHOTO TELEGRAM RESULT:",
     JSON.stringify(result)
   );
+  return result;
+}
+
+// ================================
+// ИЗМЕНЕНИЕ ФОТО В КАТАЛОГЕ
+// ================================
+async function editCatalogPhoto(
+  env,
+  chatId,
+  messageId,
+  photo,
+  caption
+) {
+  const response = await fetch(
+    "https://api.telegram.org/bot" +
+    env.TELEGRAM_TOKEN +
+    "/editMessageMedia",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        message_id: messageId,
+        media: {
+          type: "photo",
+          media: photo,
+          caption: caption
+        },
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "⬅️ Предыдущий",
+                callback_data: "catalog_prev"
+              },
+              {
+                text: "Следующий ➡️",
+                callback_data: "catalog_next"
+              }
+            ],
+            [
+              {
+                text: "📝 Заказать этот букет",
+                callback_data: "catalog_order"
+              }
+            ],
+            [
+              {
+                text: "🏠 В меню",
+                callback_data: "catalog_menu"
+              }
+            ]
+          ]
+        }
+      })
+    }
+  );
+
+  const result = await response.text();
+
+  console.log(
+    "EDIT CATALOG PHOTO:",
+    result
+  );
+
   return result;
 }
 //Test deployment
