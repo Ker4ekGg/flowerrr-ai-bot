@@ -271,12 +271,12 @@ if (update.callback_query) {
   const messageId = callback.message.message_id;
   const data = callback.data;
 
-  // Убираем "часики" на кнопке Telegram
+ // Убираем "часики" на кнопке Telegram
   await fetch(
     "https://api.telegram.org/bot" +
-    env.TELEGRAM_TOKEN +
-    "/answerCallbackQuery",
-    
+      env.TELEGRAM_TOKEN +
+      "/answerCallbackQuery",
+    {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -1698,8 +1698,8 @@ async function editCatalogPhoto(
 ) {
   const response = await fetch(
     "https://api.telegram.org/bot" +
-    env.TELEGRAM_TOKEN +
-    "/editMessageMedia",
+      env.TELEGRAM_TOKEN +
+      "/editMessageMedia",
     {
       method: "POST",
       headers: {
