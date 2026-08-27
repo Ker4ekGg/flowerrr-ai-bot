@@ -423,22 +423,17 @@ const bouquets = [
 // КАТАЛОГ FLOWERRR
 // ================================
 if (text === "💐 Каталог") {
-  console.log("CATALOG BUTTON RECEIVED");
-  const bouquet = bouquets[0];
-  const photoResult = await sendPhoto(
+
+  await sendPhoto(
     env,
     chatId,
-    bouquet.photo,
-    "🌸 " + bouquet.name + "\n\n" +
-    "💰 " + bouquet.price + "\n\n" +
-    bouquet.feature
+    "AgACAgIAAxkBAAMyao9zrQXm-Hj3XRqCCtQz5rlX26QAAm4maxuPtHhIAfZicmU3g9kBAAMCAAN4AAM9BA",
+    "🧪 Тестовое фото NOIR DESIRE"
   );
-  console.log(
-    "CATALOG PHOTO RESULT:",
-    JSON.stringify(photoResult)
-  );
+
   return new Response("OK");
 }
+
         // ================================
         // ЗАКАЗАТЬ ВЫБРАННЫЙ БУКЕТ
         // ================================
