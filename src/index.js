@@ -363,23 +363,284 @@ await env.CHAT_HISTORY.delete(String(chatId));
           return new Response("OK");
         }
 
-        // Каталог
-        if (text === "🌸 Букеты") {
-          await sendMessage(
-            env,
-            chatId,
-            "🌸 НАШИ БУКЕТЫ\n\n" +
-              "💐 Классический — от 2 500 ₽\n" +
-              "🌷 Нежный — от 3 000 ₽\n" +
-              "🌹 Розовый — от 3 500 ₽\n" +
-              "🌼 Яркий — от 3 500 ₽\n" +
-              "✨ Авторский — от 4 000 ₽\n\n" +
-              "Для заказа нажмите «📝 Заказать букет»."
-          );
+    // ================================
+    // FLOWERRR — КАТАЛОГ БУКЕТОВ
+    // ================================
 
-          return new Response("OK");
-        }
+const bouquets = [
+  {
+    name: "NOIR DESIRE",
+    price: "6 490 ₽",
+    feature: "🎵 Ваша песня по QR-коду",
+    photo: "AgACAgIAAxkBAAMyao9zrQXm-Hj3XRqCCtQz5rlX26QAAm4maxuPtHhIAfZicmU3g9kBAAMCAAN4AAM9BA"
+  },
+  {
+    name: "SUNSET SYMPHONY",
+    price: "5 990 ₽",
+    feature: "💌 Личное послание",
+    photo: "AgACAgIAAxkBAAM3ao98blqfRwN-AbVjbmJayu4ukoYAAm8maxuPtHhIKmLtYHdinSYBAAMCAAN4AAM9BA"
+  },
+  {
+    name: "CLOUD WHISPER",
+    price: "5 790 ₽",
+    feature: "📸 Ваше фото в букете",
+    photo: "AgACAgIAAxkBAAM5ao98h9RSJ1EjHDr5y0YKq5fsJXcAAnAmaxuPtHhIxm2kaB_f6AIBAAMCAAN4AAM9BA"
+  },
+  {
+    name: "BERRY CRUSH",
+    price: "5 490 ₽",
+    feature: "📍 Координаты особенного места",
+    photo: "AgACAgIAAxkBAAM7ao98pv8p_W6yTiIscweCjxGcCVwAAnEmaxuPtHhIC_GF74DyiWoBAAMCAAN4AAM9BA"
+  },
+  {
+    name: "RED FLAG",
+    price: "5 990 ₽",
+    feature: "📅 Ваша важная дата",
+    photo: "AgACAgIAAxkBAAM9ao981FWa8XLjwsJMwlZKyovEwIcAAnImaxuPtHhIRpCHLXv1a7EBAAMCAAN4AAM9BA"
+  },
+  {
+    name: "POP FICTION",
+    price: "5 490 ₽",
+    feature: "🎁 Маленький подарок-сюрприз",
+    photo: "AgACAgIAAxkBAAM_ao986mF65jyQ4aFp_6y3BB2CpYwAAnMmaxuPtHhIiai_GrMTE70BAAMCAAN4AAM9BA"
+  },
+  {
+    name: "WILD POETRY",
+    price: "6 290 ₽",
+    feature: "🪄 Букет с секретом",
+    photo: "AgACAgIAAxkBAANBao99BL7HpPC-AAHjDGMYZo5sFNSVAAJ0Jmsbj7R4SDl1l_jdRuO4AQADAgADeAADPQQ"
+  },
+  {
+    name: "AFTER MIDNIGHT",
+    price: "5 990 ₽",
+    feature: "🕯️ Оформим букет под особенный момент",
+    photo: "AgACAgIAAxkBAANDao99HIP_Z3HHJSUPi_aP5iNyXy4AAnUmaxuPtHhIrHLxS_cfayABAAMCAAN4AAM9BA"
+  }
+];
 
+
+// ================================
+// КАТАЛОГ FLOWERRR
+// ================================
+
+if (text === "💐 Каталог") {
+
+  const bouquet = bouquets[0];
+
+  const bouquetIndex = 0;
+
+   await sendPhoto(
+    env,
+    chatId,
+    bouquet.photo,
+    "🌸 " + bouquet.name + "\n\n" +
+    "💰 " + bouquet.price + "\n\n" +
+    bouquet.feature + "\n\n" +
+    "Букет " + (bouquetIndex + 1) + " из " + bouquets.length,
+    [
+      ["➡️ Следующий"],
+      ["📝 Заказать этот букет"],
+      ["🏠 В меню"]
+    ]
+  );
+    if (env.ORDERS) {
+    await env.ORDERS.put(
+      String(chatId),
+      JSON.stringify({
+        step: "catalog",
+        bouquetIndex: bouquetIndex
+      }),
+      {
+        expirationTtl: 3600
+      }
+    );
+  }
+
+  return new Response("OK");
+}
+        // ================================
+        // ЗАКАЗАТЬ ВЫБРАННЫЙ БУКЕТ
+        // ================================
+
+        if (text === "📝 Заказать этот букет") {
+            if (!env.ORDERS) {
+    await sendMessage(
+      env,
+      chatId,
+      "⚠️ Оформление заказа временно недоступно."
+    );
+                  return new Response("OK");
+  }
+            const catalogState =
+    await env.ORDERS.get(String(chatId), "json");
+            if (
+    !catalogState ||
+    catalogState.step !== "catalog"
+  ) {
+    await sendMessage(
+      env,
+      chatId,
+      "🌸 Сначала выберите букет в каталоге."
+    );
+                  return new Response("OK");
+  }
+            const bouquet =
+    bouquets[catalogState.bouquetIndex];
+            const order = {
+    orderNumber: "FLOW-" + Date.now(),
+    step: "budget",
+    bouquet: bouquet.name,
+    bouquetPrice: bouquet.price,
+    createdAt: new Date().toISOString()
+  };
+            await env.ORDERS.put(
+    String(chatId),
+    JSON.stringify(order),
+    {
+      expirationTtl: 86400
+    }
+  );
+            // Уведомление владельцу
+  await sendAdminMessage(
+    env,
+    "🛎 КЛИЕНТ ВЫБРАЛ БУКЕТ\n\n" +
+    "💐 Букет: " + bouquet.name + "\n" +
+    "💰 Цена: " + bouquet.price + "\n\n" +
+    "👤 Имя: " + telegramName + "\n" +
+    "📱 Telegram: " + telegramUsername + "\n" +
+    "🆔 ID: " + chatId
+  );
+            await sendMessage(
+    env,
+    chatId,
+    "🌸 Вы выбрали:\n\n" +
+    "💐 " + bouquet.name + "\n" +
+    "💰 " + bouquet.price + "\n\n" +
+    "Отлично! Давайте оформим заказ.\n\n" +
+    "💰 Шаг 1 из 4\n\n" +
+    "Укажите ваш бюджет.\n\n" +
+    "Если хотите заказать именно этот букет по указанной цене — просто напишите:\n" +
+    "«По цене из каталога»"
+  );
+            return new Response("OK");
+}
+        // ================================
+        // СЛЕДУЮЩИЙ БУКЕТ
+        // ================================
+
+        if (text === "➡️ Следующий") {
+          if (!env.ORDERS) {
+    await sendMessage(
+      env,
+      chatId,
+      "⚠️ Каталог временно недоступен."
+    );
+            
+      return new Response("OK");
+  }
+  const catalogState =
+    await env.ORDERS.get(String(chatId), "json");
+            if (
+    !catalogState ||
+    catalogState.step !== "catalog"
+  ) {
+    await sendMessage(
+      env,
+      chatId,
+      "🌸 Сначала откройте каталог."
+    );
+                  return new Response("OK");
+  }
+            let nextIndex =
+    (catalogState.bouquetIndex + 1) % bouquets.length;
+          
+            const bouquet = bouquets[nextIndex];
+          
+            await env.ORDERS.put(
+    String(chatId),
+    JSON.stringify({
+      step: "catalog",
+      bouquetIndex: nextIndex
+    }),
+    {
+      expirationTtl: 3600
+    }
+  );
+            await sendPhoto(
+    env,
+    chatId,
+    bouquet.photo,
+    "🌸 " + bouquet.name + "\n\n" +
+    "💰 " + bouquet.price + "\n\n" +
+    bouquet.feature + "\n\n" +
+    "Букет " + (nextIndex + 1) + " из " + bouquets.length,
+    [
+      ["⬅️ Предыдущий", "➡️ Следующий"],
+      ["📝 Заказать этот букет"],
+      ["🏠 В меню"]
+    ]
+  );
+            return new Response("OK");
+}
+        // ================================
+        // ПРЕДЫДУЩИЙ БУКЕТ
+        // ================================
+
+        if (text === "⬅️ Предыдущий") {
+            if (!env.ORDERS) {
+    await sendMessage(
+      env,
+      chatId,
+      "⚠️ Каталог временно недоступен."
+    );
+                  return new Response("OK");
+  }
+            const catalogState =
+    await env.ORDERS.get(String(chatId), "json");
+            if (
+    !catalogState ||
+    catalogState.step !== "catalog"
+  ) {
+    await sendMessage(
+      env,
+      chatId,
+      "🌸 Сначала откройте каталог."
+    );
+                  return new Response("OK");
+  }
+            let previousIndex =
+    catalogState.bouquetIndex - 1;
+            if (previousIndex < 0) {
+    previousIndex = bouquets.length - 1;
+  }
+            const bouquet = bouquets[previousIndex];
+
+            await env.ORDERS.put(
+    String(chatId),
+    JSON.stringify({
+      step: "catalog",
+      bouquetIndex: previousIndex
+    }),
+    {
+      expirationTtl: 3600
+    }
+  );
+            await sendPhoto(
+    env,
+    chatId,
+    bouquet.photo,
+    "🌸 " + bouquet.name + "\n\n" +
+    "💰 " + bouquet.price + "\n\n" +
+    bouquet.feature + "\n\n" +
+    "Букет " + (previousIndex + 1) + " из " + bouquets.length,
+    [
+      ["⬅️ Предыдущий", "➡️ Следующий"],
+      ["📝 Заказать этот букет"],
+      ["🏠 В меню"]
+    ]
+  );
+            return new Response("OK");
+}
         // 1 сентября
         if (text === "🎓 1 сентября") {
           await sendMessage(
@@ -1131,5 +1392,42 @@ async function sendMessage(env, chatId, text, keyboard) {
   const result = await response.text();
 
   console.log("Telegram response:", result);
+}
+
+// ================================
+// ОТПРАВКА ФОТО КЛИЕНТУ
+// ================================
+
+async function sendPhoto(env, chatId, photo, caption, keyboard) {
+
+  const body = {
+    chat_id: chatId,
+    photo: photo,
+    caption: caption
+  };
+
+  if (keyboard) {
+    body.reply_markup = {
+      keyboard: keyboard,
+      resize_keyboard: true
+    };
+  }
+
+  const telegramUrl =
+    "https://api.telegram.org/bot" +
+    env.TELEGRAM_TOKEN +
+    "/sendPhoto";
+
+  const response = await fetch(telegramUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  const result = await response.text();
+
+  console.log("Telegram PHOTO response:", result);
 }
 //Test deployment
