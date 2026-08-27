@@ -261,6 +261,60 @@ if (update.message.photo) {
         console.log("TELEGRAM UPDATE:", JSON.stringify(update));
 
         // ================================
+        // КАТАЛОГ FLOWERRR
+        // ================================
+
+const bouquets = [
+  {
+    name: "NOIR DESIRE",
+    price: "6 490 ₽",
+    feature: "🎵 Ваша песня по QR-коду",
+    photo: "AgACAgIAAxkBAAIBcWqPjhdliaEB61u0RUPPfhdX15nBAAJuJmsbj7R4SNAjKTokLwHVAQADAgADeAADPQQ"
+  },
+  {
+    name: "SUNSET SYMPHONY",
+    price: "5 990 ₽",
+    feature: "💌 Личное послание",
+    photo: "AgACAgIAAxkBAAIBdmqPj-HJFiXZU61pPTvDzIT6GuQOAAJvJmsbj7R4SC5n22dHCW0ZAQADAgADeAADPQQ"
+  },
+  {
+    name: "CLOUD WHISPER",
+    price: "5 790 ₽",
+    feature: "📸 Ваше фото в букете",
+    photo: "AgACAgIAAxkBAAIBd2qPj-XTaRpkGV7qSHRaM9fN-E48AAJwJmsbj7R4SEJ_MplBfpEtAQADAgADeAADPQQ"
+  },
+  {
+    name: "BERRY CRUSH",
+    price: "5 490 ₽",
+    feature: "📍 Координаты особенного места",
+    photo: "AgACAgIAAxkBAAIBeGqPj-g9Jrb4mdlHnw_2j9yGOETtAAJxJmsbj7R4SHsSpCizM2yEAQADAgADeAADPQQ"
+  },
+  {
+    name: "RED FLAG",
+    price: "5 990 ₽",
+    feature: "📅 Ваша важная дата",
+    photo: "AgACAgIAAxkBAAIBeWqPj-z9HX4QMO_d67fnY1m2Hh1eAAJyJmsbj7R4SLCc1c9wri3MAQADAgADeAADPQQ"
+  },
+  {
+    name: "POP FICTION",
+    price: "5 490 ₽",
+    feature: "🎁 Маленький подарок-сюрприз",
+    photo: "AgACAgIAAxkBAAIBemqPj-8DMD1BTXVtUHmuGh7kJ_RFAAJzJmsbj7R4SDIVfsfgojRNAQADAgADeAADPQQ"
+  },
+  {
+    name: "WILD POETRY",
+    price: "6 290 ₽",
+    feature: "🪄 Букет с секретом",
+    photo: "AgACAgIAAxkBAAIBe2qPj_MFrWvJjqKZov_eMZwazw5fAAJ0Jmsbj7R4SMlUE8sOukTTAQADAgADeAADPQQ"
+  },
+  {
+    name: "AFTER MIDNIGHT",
+    price: "5 990 ₽",
+    feature: "🕯️ Оформим букет под особенный момент",
+    photo: "AgACAgIAAxkBAAIBfGqPj_WFDHjJWjLwKakpAydIpV7ZAAJ1Jmsbj7R4SO1-nmvDZFbBAQADAgADeAADPQQ"
+  }
+];
+        // ================================
         // INLINE-КНОПКИ КАТАЛОГА
         // ================================
 
@@ -570,60 +624,6 @@ await env.CHAT_HISTORY.delete(String(chatId));
 
           return new Response("OK");
         }
-
-    // ================================
-// FLOWERRR — КАТАЛОГ БУКЕТОВ
-// ================================
-const bouquets = [
-  {
-    name: "NOIR DESIRE",
-    price: "6 490 ₽",
-    feature: "🎵 Ваша песня по QR-коду",
-    photo: "AgACAgIAAxkBAAIBcWqPjhdliaEB61u0RUPPfhdX15nBAAJuJmsbj7R4SNAjKTokLwHVAQADAgADeAADPQQ"
-  },
-  {
-    name: "SUNSET SYMPHONY",
-    price: "5 990 ₽",
-    feature: "💌 Личное послание",
-    photo: "AgACAgIAAxkBAAIBdmqPj-HJFiXZU61pPTvDzIT6GuQOAAJvJmsbj7R4SC5n22dHCW0ZAQADAgADeAADPQQ"
-  },
-  {
-    name: "CLOUD WHISPER",
-    price: "5 790 ₽",
-    feature: "📸 Ваше фото в букете",
-    photo: "AgACAgIAAxkBAAIBd2qPj-XTaRpkGV7qSHRaM9fN-E48AAJwJmsbj7R4SEJ_MplBfpEtAQADAgADeAADPQQ"
-  },
-  {
-    name: "BERRY CRUSH",
-    price: "5 490 ₽",
-    feature: "📍 Координаты особенного места",
-    photo: "AgACAgIAAxkBAAIBeGqPj-g9Jrb4mdlHnw_2j9yGOETtAAJxJmsbj7R4SHsSpCizM2yEAQADAgADeAADPQQ"
-  },
-  {
-    name: "RED FLAG",
-    price: "5 990 ₽",
-    feature: "📅 Ваша важная дата",
-    photo: "AgACAgIAAxkBAAIBeWqPj-z9HX4QMO_d67fnY1m2Hh1eAAJyJmsbj7R4SLCc1c9wri3MAQADAgADeAADPQQ"
-  },
-  {
-    name: "POP FICTION",
-    price: "5 490 ₽",
-    feature: "🎁 Маленький подарок-сюрприз",
-    photo: "AgACAgIAAxkBAAIBemqPj-8DMD1BTXVtUHmuGh7kJ_RFAAJzJmsbj7R4SDIVfsfgojRNAQADAgADeAADPQQ"
-  },
-  {
-    name: "WILD POETRY",
-    price: "6 290 ₽",
-    feature: "🪄 Букет с секретом",
-    photo: "AgACAgIAAxkBAAIBe2qPj_MFrWvJjqKZov_eMZwazw5fAAJ0Jmsbj7R4SMlUE8sOukTTAQADAgADeAADPQQ"
-  },
-  {
-    name: "AFTER MIDNIGHT",
-    price: "5 990 ₽",
-    feature: "🕯️ Оформим букет под особенный момент",
-    photo: "AgACAgIAAxkBAAIBfGqPj_WFDHjJWjLwKakpAydIpV7ZAAJ1Jmsbj7R4SO1-nmvDZFbBAQADAgADeAADPQQ"
-  }
-];
 
 // ================================
 // КАТАЛОГ FLOWERRR
