@@ -417,42 +417,45 @@ const bouquets = [
   }
 ];
 
-
 // ================================
 // КАТАЛОГ FLOWERRR
 // ================================
+
 if (text === "💐 Каталог") {
 
-  const response = await fetch(
-    "https://api.telegram.org/bot" +
-    env.TELEGRAM_TOKEN +
-    "/sendPhoto",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        photo: "AgACAgIAAxkBAAMyao9zrQXm-Hj3XRqCCtQz5rlX26QAAm4maxuPtHhIAfZicmU3g9kBAAMCAAN4AAM9BA",
-        caption: "🧪 TEST NOIR DESIRE"
-      })
-    }
-  );
+  const bouquet = bouquets[0];
+  const bouquetIndex = 0;
 
-  const result = await response.text();
-
-  console.log("DIRECT SEND PHOTO:", result);
-
-  await sendMessage(
+  await sendPhoto(
     env,
     chatId,
-    "🧪 Telegram ответил:\n\n" + result
+    bouquet.photo,
+    "🌸 " + bouquet.name + "\n\n" +
+    "💰 " + bouquet.price + "\n\n" +
+    bouquet.feature + "\n\n" +
+    "Букет " + (bouquetIndex + 1) + " из " + bouquets.length,
+    [
+      ["➡️ Следующий"],
+      ["📝 Заказать этот букет"],
+      ["🏠 В меню"]
+    ]
   );
+
+  if (env.ORDERS) {
+    await env.ORDERS.put(
+      String(chatId),
+      JSON.stringify({
+        step: "catalog",
+        bouquetIndex: bouquetIndex
+      }),
+      {
+        expirationTtl: 3600
+      }
+    );
+  }
 
   return new Response("OK");
 }
-
         // ================================
         // ЗАКАЗАТЬ ВЫБРАННЫЙ БУКЕТ
         // ================================
