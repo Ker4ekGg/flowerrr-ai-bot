@@ -424,11 +424,31 @@ const bouquets = [
 // ================================
 if (text === "💐 Каталог") {
 
-  await sendPhoto(
+  const response = await fetch(
+    "https://api.telegram.org/bot" +
+    env.TELEGRAM_TOKEN +
+    "/sendPhoto",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        photo: "AgACAgIAAxkBAAMyao9zrQXm-Hj3XRqCCtQz5rlX26QAAm4maxuPtHhIAfZicmU3g9kBAAMCAAN4AAM9BA",
+        caption: "🧪 TEST NOIR DESIRE"
+      })
+    }
+  );
+
+  const result = await response.text();
+
+  console.log("DIRECT SEND PHOTO:", result);
+
+  await sendMessage(
     env,
     chatId,
-    "AgACAgIAAxkBAAMyao9zrQXm-Hj3XRqCCtQz5rlX26QAAm4maxuPtHhIAfZicmU3g9kBAAMCAAN4AAM9BA",
-    "🧪 Тестовое фото NOIR DESIRE"
+    "🧪 Telegram ответил:\n\n" + result
   );
 
   return new Response("OK");
