@@ -422,17 +422,21 @@ const bouquets = [
 // ================================
 // КАТАЛОГ FLOWERRR
 // ================================
-
 if (text === "💐 Каталог") {
-
   console.log("CATALOG BUTTON RECEIVED");
-
-  await sendMessage(
+  const bouquet = bouquets[0];
+  const photoResult = await sendPhoto(
     env,
     chatId,
-    "🧪 Кнопка каталога получена.\n\nПроверяем отправку фото..."
+    bouquet.photo,
+    "🌸 " + bouquet.name + "\n\n" +
+    "💰 " + bouquet.price + "\n\n" +
+    bouquet.feature
   );
-
+  console.log(
+    "CATALOG PHOTO RESULT:",
+    JSON.stringify(photoResult)
+  );
   return new Response("OK");
 }
         // ================================
@@ -1372,39 +1376,37 @@ async function sendMessage(env, chatId, text, keyboard) {
 }
 
 // ================================
-// ОТПРАВКА ФОТО КЛИЕНТУ
+// ОТПРАВКА ФОТО
 // ================================
-
 async function sendPhoto(env, chatId, photo, caption, keyboard) {
-
   const body = {
     chat_id: chatId,
     photo: photo,
     caption: caption
   };
-
   if (keyboard) {
     body.reply_markup = {
       keyboard: keyboard,
       resize_keyboard: true
     };
   }
-
-  const telegramUrl =
+  const response = await fetch(
     "https://api.telegram.org/bot" +
     env.TELEGRAM_TOKEN +
-    "/sendPhoto";
-
-  const response = await fetch(telegramUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
-
-  const result = await response.text();
-
-  console.log("Telegram PHOTO response:", result);
+    "/sendPhoto",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    }
+  );
+  const result = await response.json();
+  console.log(
+    "SEND PHOTO TELEGRAM RESULT:",
+    JSON.stringify(result)
+  );
+  return result;
 }
 //Test deployment
