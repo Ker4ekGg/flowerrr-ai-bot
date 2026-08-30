@@ -156,23 +156,134 @@ if (url.pathname === "/admin-telegram" && request.method === "POST") {
     const text = update.message.text || "";
 
     // ================================
+    // КЛИЕНТ НАЖАЛ «Я ОПЛАТИЛ»
+    // ================================
+
+if (text === "📸 Я оплатил") {
+  const paymentOrder =
+    env.ORDERS
+      ? await env.ORDERS.get(
+          String(chatId),
+          "json"
+        )
+      : null;
+
+  if (!paymentOrder) {
+    await sendMessage(
+      env,
+      chatId,
+      "⚠️ Активный заказ не найден.\n\n" +
+      "Пожалуйста, обратитесь к менеджеру."
+    );
+
+    return new Response("OK");
+  }
+
+  paymentOrder.step = "payment_waiting";
+
+  await env.ORDERS.put(
+    String(chatId),
+    JSON.stringify(paymentOrder),
+    {
+      expirationTtl: 86400
+    }
+  );
+
+  await sendMessage(
+    env,
+    chatId,
+    "📸 Отлично!\n\n" +
+    "Теперь отправьте сюда скриншот перевода.\n\n" +
+    "После этого менеджер проверит поступление оплаты и подтвердит заказ. 🌸"
+  );
+  
+  return new Response("OK");
+}
+
+    // ================================
     // ПОЛУЧЕНИЕ PHOTO FILE ID
     // ================================
 
 if (update.message.photo) {
-  const photos = update.message.photo;
-  const photo = photos[photos.length - 1];
+const photos = update.message.photo; 
+const photo = photos[photos.length - 1];
+  
+// Проверяем, ожидаем ли мы чек оплаты 
 
-  await sendAdminBotMessage(
-    env,
-    chatId,
-    "📸 PHOTO FILE ID:\n\n" + photo.file_id
-  );
+  const paymentOrder = 
+    env.ORDERS
+    ? await env.ORDERS.get( 
+      String(chatId),
+      "json"
+    )
+    : null;
 
-  return new Response("OK");
+     // ================================
+     // ЧЕК ОПЛАТЫ 
+     // ================================
+
+  if ( 
+    paymentOrder &&
+    paymentOrder.step === "payment_waiting" 
+  ) {
+    const paymentAmount =
+  paymentOrder.bouquetPrice ||
+  paymentOrder.budget ||
+  "Сумма уточняется";
+
+await sendAdminBotMessage(
+  env,
+  chatId,
+  "💳 ОПЛАТА ОЖИДАЕТ ПРОВЕРКИ\n\n" +
+
+  "🔢 Заказ: " +
+  (paymentOrder.orderNumber || "—") + "\n" +
+
+  "💐 Букет: " +
+  (paymentOrder.bouquet || "—") + "\n" +
+
+  "💰 Сумма: " +
+  paymentAmount + "\n\n" +
+
+  "👤 Клиент: " +
+  telegramName + "\n" +
+
+  "📱 Telegram: " +
+  telegramUsername + "\n" +
+
+  "🆔 ID: " +
+  chatId + "\n\n" +
+
+  "📸 Клиент отправил скриншот оплаты.\n\n" +
+
+  "Проверьте поступление денег в Яндекс Пэй.\n\n" +
+
+  "PHOTO FILE ID:\n" +
+  photo.file_id
+);
+
+await sendMessage(
+  env,
+  chatId,
+  "✅ Скриншот оплаты получил!\n\n" +
+  "Менеджер проверит поступление денег и подтвердит заказ. 🌸"
+);
+
+return new Response("OK");
+    }
+  // ================================
+  // ОБЫЧНОЕ ФОТО 
+  // ================================
+await sendAdminBotMessage( 
+  env,
+  chatId,
+  "📸 PHOTO FILE ID:\n\n" + 
+  photo.file_id
+);
+
+  return new Response("OK"); 
 }
-
-    // Разрешаем доступ только владельцу
+     // Разрешаем доступ только владельцу
     if (text === "/start" || text === "/admin") {
       await sendAdminMenu(env, chatId);
       return new Response("OK");
@@ -1243,17 +1354,37 @@ if (env.CRM) {
   }
 }
 
-// Подтверждение клиенту
+// ================================
+// ОПЛАТА ЗАКАЗА
+// ================================
+
+const paymentAmount =
+  savedOrder.bouquetPrice ||
+  savedOrder.budget ||
+  "Сумма уточняется";
+
 await sendMessage(
-env,
-chatId,
-"✅ Спасибо! Заявка принята.\n\n" +
-"Мы проверим детали заказа и свяжемся с вами для подтверждения. 🌸\n\n" +
-"Если хотите, можете задать любой вопрос."
+  env,
+  chatId,
+  "🌸 ЗАКАЗ " + savedOrder.orderNumber + "\n\n" +
+  "💐 Букет: " + savedOrder.bouquet + "\n" +
+  "💰 К оплате: " + paymentAmount + "\n\n" +
+
+  "💳 ОПЛАТА ПЕРЕВОДОМ\n\n" +
+
+  "Переведите указанную сумму на карту Яндекс Пэй:\n\n" +
+  "💳 " + env.PAYMENT_CARD + "\n\n" +
+
+  "После перевода нажмите кнопку «📸 Я оплатил».\n" +
+  "Затем отправьте скриншот перевода.\n\n" +
+
+  "После проверки платежа менеджер подтвердит заказ. 🌸",
+  [
+    ["📸 Я оплатил"]
+  ]
 );
 
 return new Response("OK");
-}
 
         // ================================
         // ПОЛУЧЕНИЕ PHOTO FILE ID
