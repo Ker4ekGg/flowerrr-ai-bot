@@ -1433,12 +1433,12 @@ await sendAdminMessage(
 
 return new Response("OK");
 
-} catch (error) {
+  } catch (error) {
 
-  console.error("TELEGRAM WEBHOOK ERROR:", error);
+    console.error("TELEGRAM WEBHOOK ERROR:", error);
 
-  return new Response("OK");
-}
+    return new Response("OK");
+  }
 
 }
 
