@@ -155,11 +155,15 @@ if (url.pathname === "/admin-telegram" && request.method === "POST") {
     const chatId = update.message.chat.id;
     const text = update.message.text || "";
 
-    // ================================
-    // КЛИЕНТ НАЖАЛ «Я ОПЛАТИЛ»
-    // ================================
+// ================================
+// ПОЛУЧЕНИЕ PHOTO FILE ID
+// ================================
 
-if (text === "📸 Я оплатил") {
+if (update.message.photo) {
+  const photos = update.message.photo;
+  const photo = photos[photos.length - 1];
+
+  // Проверяем, ожидаем ли мы чек оплаты
   const paymentOrder =
     env.ORDERS
       ? await env.ORDERS.get(
@@ -168,109 +172,69 @@ if (text === "📸 Я оплатил") {
         )
       : null;
 
-  if (!paymentOrder) {
+  // ================================
+  // ЧЕК ОПЛАТЫ
+  // ================================
+
+  if (
+    paymentOrder &&
+    paymentOrder.step === "payment_waiting"
+  ) {
+    const paymentAmount =
+      paymentOrder.bouquetPrice ||
+      paymentOrder.budget ||
+      "Сумма уточняется";
+
+    paymentOrder.paymentStatus = "screenshot_received";
+
+    await env.ORDERS.put(
+      String(chatId),
+      JSON.stringify(paymentOrder),
+      {
+        expirationTtl: 86400
+      }
+    );
+
+    await sendAdminMessage(
+      env,
+      "💳 ОПЛАТА ОЖИДАЕТ ПРОВЕРКИ\n\n" +
+
+      "🔢 Заказ: " +
+      (paymentOrder.orderNumber || "—") + "\n" +
+
+      "💐 Букет: " +
+      (paymentOrder.bouquet || "—") + "\n" +
+
+      "💰 Сумма: " +
+      paymentAmount + "\n\n" +
+
+      "👤 Клиент: " +
+      telegramName + "\n" +
+
+      "📱 Telegram: " +
+      telegramUsername + "\n" +
+
+      "🆔 ID: " +
+      chatId + "\n\n" +
+
+      "📸 Клиент отправил скриншот оплаты.\n\n" +
+
+      "Проверьте поступление денег в Яндекс Пэй.\n\n" +
+
+      "PHOTO FILE ID:\n" +
+      photo.file_id
+    );
+
     await sendMessage(
       env,
       chatId,
-      "⚠️ Активный заказ не найден.\n\n" +
-      "Пожалуйста, обратитесь к менеджеру."
+      "✅ Скриншот оплаты получил!\n\n" +
+      "Менеджер проверит поступление денег и подтвердит заказ. 🌸"
     );
 
     return new Response("OK");
   }
 
-  paymentOrder.step = "payment_waiting";
-
-  await env.ORDERS.put(
-    String(chatId),
-    JSON.stringify(paymentOrder),
-    {
-      expirationTtl: 86400
-    }
-  );
-
-  await sendMessage(
-    env,
-    chatId,
-    "📸 Отлично!\n\n" +
-    "Теперь отправьте сюда скриншот перевода.\n\n" +
-    "После этого менеджер проверит поступление оплаты и подтвердит заказ. 🌸"
-  );
-  
-  return new Response("OK");
-}
-
-    // ================================
-    // ПОЛУЧЕНИЕ PHOTO FILE ID
-    // ================================
-
-if (update.message.photo) {
-const photos = update.message.photo; 
-const photo = photos[photos.length - 1];
-  
-// Проверяем, ожидаем ли мы чек оплаты 
-
-  const paymentOrder = 
-    env.ORDERS
-    ? await env.ORDERS.get( 
-      String(chatId),
-      "json"
-    )
-    : null;
-
-     // ================================
-     // ЧЕК ОПЛАТЫ 
-     // ================================
-
-  if ( 
-    paymentOrder &&
-    paymentOrder.step === "payment_waiting" 
-  ) {
-    const paymentAmount =
-  paymentOrder.bouquetPrice ||
-  paymentOrder.budget ||
-  "Сумма уточняется";
-
-await sendAdminBotMessage(
-  env,
-  chatId,
-  "💳 ОПЛАТА ОЖИДАЕТ ПРОВЕРКИ\n\n" +
-
-  "🔢 Заказ: " +
-  (paymentOrder.orderNumber || "—") + "\n" +
-
-  "💐 Букет: " +
-  (paymentOrder.bouquet || "—") + "\n" +
-
-  "💰 Сумма: " +
-  paymentAmount + "\n\n" +
-
-  "👤 Клиент: " +
-  telegramName + "\n" +
-
-  "📱 Telegram: " +
-  telegramUsername + "\n" +
-
-  "🆔 ID: " +
-  chatId + "\n\n" +
-
-  "📸 Клиент отправил скриншот оплаты.\n\n" +
-
-  "Проверьте поступление денег в Яндекс Пэй.\n\n" +
-
-  "PHOTO FILE ID:\n" +
-  photo.file_id
-);
-
-await sendMessage(
-  env,
-  chatId,
-  "✅ Скриншот оплаты получил!\n\n" +
-  "Менеджер проверит поступление денег и подтвердит заказ. 🌸"
-);
-
-return new Response("OK");
-    }
   // ================================
   // ОБЫЧНОЕ ФОТО 
   // ================================
@@ -636,6 +600,51 @@ if (!update.message) {
 
 const chatId = update.message.chat.id;
 const text = update.message.text || "";
+
+// ================================
+// ОПЛАТА — КЛИЕНТ НАЖАЛ «Я ОПЛАТИЛ»
+// ================================
+
+if (text === "📸 Я оплатил") {
+  const paymentOrder =
+    env.ORDERS
+      ? await env.ORDERS.get(
+          String(chatId),
+          "json"
+        )
+      : null;
+
+  if (!paymentOrder) {
+    await sendMessage(
+      env,
+      chatId,
+      "⚠️ Активный заказ не найден.\n\n" +
+      "Пожалуйста, обратитесь к менеджеру."
+    );
+
+    return new Response("OK");
+  }
+
+  paymentOrder.step = "payment_waiting";
+
+  await env.ORDERS.put(
+    String(chatId),
+    JSON.stringify(paymentOrder),
+    {
+      expirationTtl: 86400
+    }
+  );
+
+  await sendMessage(
+    env,
+    chatId,
+    "📸 Отлично!\n\n" +
+    "Теперь отправьте сюда скриншот перевода.\n\n" +
+    "После этого менеджер проверит поступление оплаты и подтвердит заказ. 🌸"
+  );
+
+  return new Response("OK");
+}
         
 const telegramUsername =
   update.message.from?.username
@@ -1302,8 +1311,15 @@ env,
 orderText
 );
 
-// Удаляем заказ из KV
-await env.ORDERS.delete(String(chatId));
+// Сохраняем заказ в KV до подтверждения оплаты
+savedOrder.step = "payment_pending";
+savedOrder.paymentStatus = "pending";
+
+await env.ORDERS.put(
+  String(chatId),
+  JSON.stringify(savedOrder),
+  { expirationTtl: 86400 }
+);
 
   // CRM — сохраняем информацию о заказе
 if (env.CRM) {
